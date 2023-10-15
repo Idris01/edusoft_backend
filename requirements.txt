@@ -1,3 +1,4 @@
 django
 tzdata
 django-countries
+python-dotenv

@@ -19,7 +19,7 @@ class University(BaseModel):
     city = models.CharField(max_length=50, null=False)
     postal_code = models.CharField(max_length=15, null=False, blank=False)
 
-    language = models.CharField(default='English', null=False)
+    language = models.CharField(max_length=15, default='English', null=False)
 
     def __str__(self):
         return self.name
@@ -28,3 +28,5 @@ class Course(BaseModel):
     university_id = models.ForeignKey(University, null=False, on_delete=models.CASCADE)
     degree = models.ForeignKey('Degree', blank=False, on_delete=models.CASCADE)
 
+class Degree(BaseModel):
+    pass
