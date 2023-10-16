@@ -1,5 +1,7 @@
 from django.contrib import admin
-from .models import University, Degree, Course
+from .models import (
+        University, Degree, Course,Department,
+        Tuition, Officer, FeedBack, Consultation)
 
 @admin.register(University)
 class UniversityAdmin(admin.ModelAdmin):
@@ -11,4 +13,12 @@ class DegreeAdmin(admin.ModelAdmin):
 
 @admin.register(Course)
 class CouseAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(Officer)
+class OfficerAdmin(admin.ModelAdmin):
+    pass
+
+@admin.register(Department)
+class DepartmentAdmin(admin.ModelAdmin):
     pass
