@@ -33,3 +33,7 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
 - Methods: `GET`
 - Description: Get the detail of a given university
 
+
+## Data Model Diagram
+
+![data model]('updatedModelDiagram.png')
