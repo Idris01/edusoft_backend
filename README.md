@@ -8,13 +8,13 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
 - Methods: `GET`
 - Description: Get the list of all universities
 - URL Queries:
-  - limit: number of items return e.g 
+  - limit: number of items return e.g
 ```
 /api/universites?limit=10  # return the first 10 items
 ```
 - Response:
 ```
-{ 
+{
 	prev: null,
 	next: <uuid: next_id>,
 	data: [

@@ -1,3 +1,9 @@
 from django.test import TestCase
 
-# Create your tests here.
+
+class TestUniversity(TestCase):
+    """Test for University"""
+
+    @classmethod
+    def setUpClass(cls):
+        pass
