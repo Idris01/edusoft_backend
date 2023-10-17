@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django_countries.fields import CountryField
 from django.db import models
+from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 import uuid
 
@@ -38,7 +39,7 @@ class AppUser(AbstractUser):
 
 
 class Consultation(BaseModel):
-    user = models.ForeignKey(AppUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     course = models.ForeignKey("Course", on_delete=models.CASCADE)
     status = models.CharField(max_length=15, choices=CONS_CHOICES)
 
@@ -53,7 +54,7 @@ class FeedBack(BaseModel):
              from 1 to 5, 1 being the leas
              satisfaction""",
     )
-    consultation = models.ForeignKey(AppUser, on_delete=models.CASCADE)
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
 
     def __str__(self):
         return "{} Rating by {}".format(self.rating, self.consultation)

@@ -1,5 +1,7 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 from .models import (
+    AppUser,
     University,
     Degree,
     Course,
@@ -9,6 +11,11 @@ from .models import (
     FeedBack,
     Consultation,
 )
+
+
+@admin.register(AppUser)
+class AppUserAdmin(UserAdmin):
+    pass
 
 
 @admin.register(University)
