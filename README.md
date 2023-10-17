@@ -36,4 +36,4 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
 
 ## Data Model Diagram
 
-![data model]('updatedModelDiagram.png')
+![datamodel]('updatedModelDiagram.png')
