@@ -35,7 +35,7 @@ class AppUser(AbstractUser):
     email = models.EmailField(unique=True)
     USERNAME_FIELD = "email"
     UNIQUE_TOGETHER = ("email", "username")
-    REQUIRED_FIELDS = ("password", "username", "first_name", "last_name")
+    REQUIRED_FIELDS = ("password", "username", "firstname", "lastname")
 
 
 class Consultation(BaseModel):
@@ -69,6 +69,9 @@ class University(BaseModel):
     accomodation = models.TextField(help_text="details of accomodation")
 
     language = models.CharField(max_length=15, default="English", null=False)
+
+    class Meta:
+        verbose_name_plural = "Universities"
 
     def __str__(self):
         return self.name
