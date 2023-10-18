@@ -35,7 +35,7 @@ class AppUser(AbstractUser):
     email = models.EmailField(unique=True)
     USERNAME_FIELD = "email"
     UNIQUE_TOGETHER = ("email", "username")
-    REQUIRED_FIELDS = ("password", "username", "firstname", "lastname")
+    REQUIRED_FIELDS = ("password", "username", "first_name", "last_name")
 
 
 class Consultation(BaseModel):
