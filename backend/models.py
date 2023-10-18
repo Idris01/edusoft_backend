@@ -87,7 +87,7 @@ class Course(BaseModel):
     about = models.TextField(help_text="course description")
 
     def __str__(self):
-        return "{} in {}".format(self.department, self.department.univerity)
+        return "{} in {}".format(self.name, self.department.university)
 
 
 class Tuition(BaseModel):
