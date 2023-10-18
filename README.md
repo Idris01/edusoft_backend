@@ -74,7 +74,7 @@ Type the following  command and follow the prompt
 
 ```
 python manage.py createsuperuser
-``
+```
 
 
 - Start the program and open in browser
