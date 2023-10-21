@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from cities_light.admin import City, Country, Region, SubRegion
 from .models import (
     AppUser,
     University,
@@ -12,6 +13,10 @@ from .models import (
     Consultation,
 )
 
+admin.site.unregister(City)
+admin.site.unregister(Country)
+admin.site.unregister(Region)
+admin.site.unregister(SubRegion)
 
 @admin.register(AppUser)
 class AppUserAdmin(UserAdmin):

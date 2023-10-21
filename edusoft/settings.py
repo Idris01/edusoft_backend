@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "backend",
+    "cities_light",
 ]
 
 MIDDLEWARE = [
@@ -127,8 +128,12 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = "static/"
-
+STATIC_ROOT = "static"
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# configure django_cities_light
+CITIES_LIGHT_INCLUDE_COUNTRIES = ['EN', 'NG']
+CITIES_LIGHT_TRANSLATION_LANGUAGES = ['en']

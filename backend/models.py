@@ -1,18 +1,21 @@
 from django.contrib.auth.models import AbstractUser
 from django_countries.fields import CountryField
 from django.db import models
+from django.db.models.functions import Length
 from django.conf import settings
 from django.core.validators import MinValueValidator, MaxValueValidator
 import uuid
 
+
+models.CharField.register_lookup(Length)
 
 FULFILLED = "Fullfilled"
 INITIATED = "Initiated"
 PROCESSING = "Processing"
 
 CONS_CHOICES = (
-    ("Initialized", INITIATED),
-    ("Proceasing", PROCESSING),
+    ("Initiated", INITIATED),
+    ("Processing", PROCESSING),
     ("fullfilled", FULFILLED),
 )
 
@@ -28,7 +31,11 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
-
+        constraints = [
+                models.CheckConstraint(
+                    name="%(app_label)s_%(class)s_name_not_empty",
+                    check=models.Q(name__length__gt=0))
+                ]
 
 class AppUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -51,7 +58,7 @@ class FeedBack(BaseModel):
     rating = models.IntegerField(
         validators=(MinValueValidator(1), MaxValueValidator(5)),
         help_text="""level of satisafaction
-             from 1 to 5, 1 being the leas
+             from 1 to 5, 1 being the least
              satisfaction""",
     )
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
@@ -62,16 +69,19 @@ class FeedBack(BaseModel):
 
 class University(BaseModel):
     website = models.URLField(null=False, blank=False)
-    history = models.TextField()
-    country = CountryField()
-    city = models.CharField(max_length=50, null=False)
+    history = models.TextField(help_text="brief history of university")
+    country = models.ForeignKey(
+            'cities_light.Country',
+            on_delete=models.SET_NULL,
+            blank=True, null=True)
+    city = models.ForeignKey(
+            'cities_light.City',
+            on_delete=models.SET_NULL,
+            blank=True, null=True)
     postal_code = models.CharField(max_length=15, null=False, blank=False)
     accomodation = models.TextField(help_text="details of accomodation")
 
     language = models.CharField(max_length=15, default="English", null=False)
-
-    class Meta:
-        verbose_name_plural = "Universities"
 
     def __str__(self):
         return self.name
