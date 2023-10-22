@@ -9,6 +9,7 @@ import uuid
 
 models.CharField.register_lookup(Length)
 
+# consultation status
 FULFILLED = "Fullfilled"
 INITIATED = "Initiated"
 PROCESSING = "Processing"
@@ -16,9 +17,21 @@ PROCESSING = "Processing"
 CONS_CHOICES = (
     ("Initiated", INITIATED),
     ("Processing", PROCESSING),
-    ("fullfilled", FULFILLED),
+    ("Fullfilled", FULFILLED),
 )
 
+# payment status
+PENDING = "pending"
+SUCCESS = "success"
+FAILED = "failed"
+PROCESSING = "processing"
+
+PAYMENT_STATUS = (
+        ("Success", SUCCESS),
+        ("Pending", PENDING),
+        ("Failed", FAILED),
+        ("Processing", PROCESSING),
+        )
 
 # Create your models here.
 class BaseModel(models.Model):
@@ -49,9 +62,17 @@ class Consultation(BaseModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     course = models.ForeignKey("Course", on_delete=models.CASCADE)
     status = models.CharField(max_length=15, choices=CONS_CHOICES)
-
+    message = models.CharField(max_length=150, help_text="Anything you want us to know")
+    sheduled_date = models.DatetimeField()
     def __str__(self):
         return "{} by {} with satatus{}".format(self.name, self.user.username, self.status)
+
+
+class Payment(BaseModel):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    transaction_id = models.CharField(max_length=50)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(choices=PAYMENT_STATUS)
 
 
 class FeedBack(BaseModel):
