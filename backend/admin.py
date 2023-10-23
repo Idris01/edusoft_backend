@@ -12,6 +12,7 @@ from .models import (
     FeedBack,
     Consultation,
     Payment,
+    Language,
 )
 
 admin.site.unregister(City)
@@ -67,4 +68,9 @@ class TuitionAdmin(admin.ModelAdmin):
 
 @admin.register(Payment)
 class PaymentAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Language)
+class LanguageAdmin(admin.ModelAdmin):
     pass

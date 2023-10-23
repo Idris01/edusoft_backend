@@ -37,7 +37,7 @@ PAYMENT_STATUS = (
 class BaseModel(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(
-        max_length=100, null=False, help_text="name or title", blank=False
+        max_length=100, null=False, help_text="name or title", blank=False, unique=True
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -91,6 +91,13 @@ class FeedBack(BaseModel):
         return "{} Rating by {}".format(self.rating, self.consultation)
 
 
+class Language(BaseModel):
+    """define Language model"""
+
+    def __str__(self):
+        return self.name
+
+
 class University(BaseModel):
     website = models.URLField(null=False, blank=False)
     history = models.TextField(help_text="brief history of university")
@@ -103,14 +110,10 @@ class University(BaseModel):
     postal_code = models.CharField(max_length=15, null=False, blank=False)
     accomodation = models.TextField(help_text="details of accomodation")
 
-    languages = models.ManyToManyField("Language")
+    languages = models.ManyToManyField(Language, blank=False)
 
     def __str__(self):
         return self.name
-
-
-class Language(BaseModel):
-    pass
 
 
 class Department(BaseModel):
