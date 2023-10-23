@@ -11,12 +11,14 @@ from .models import (
     Officer,
     FeedBack,
     Consultation,
+    Payment,
 )
 
 admin.site.unregister(City)
 admin.site.unregister(Country)
 admin.site.unregister(Region)
 admin.site.unregister(SubRegion)
+
 
 @admin.register(AppUser)
 class AppUserAdmin(UserAdmin):
@@ -60,4 +62,9 @@ class FeedBackAdmin(admin.ModelAdmin):
 
 @admin.register(Tuition)
 class TuitionAdmin(admin.ModelAdmin):
+    pass
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
     pass

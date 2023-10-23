@@ -135,5 +135,9 @@ STATIC_ROOT = "static"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # configure django_cities_light
-CITIES_LIGHT_INCLUDE_COUNTRIES = ['EN', 'NG']
-CITIES_LIGHT_TRANSLATION_LANGUAGES = ['en']
+CITIES_LIGHT_INCLUDE_COUNTRIES = (
+    ["GB", "NG"]
+    if os.getenv("LIGHT_COUNTRIES") is None
+    else os.getenv("LIGHT_COUNTRIES").upper().split(",")
+)
+CITIES_LIGHT_TRANSLATION_LANGUAGES = ["en"]

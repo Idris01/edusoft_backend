@@ -1,5 +1,4 @@
 from django.contrib.auth.models import AbstractUser
-from django_countries.fields import CountryField
 from django.db import models
 from django.db.models.functions import Length
 from django.conf import settings
@@ -27,11 +26,12 @@ FAILED = "failed"
 PROCESSING = "processing"
 
 PAYMENT_STATUS = (
-        ("Success", SUCCESS),
-        ("Pending", PENDING),
-        ("Failed", FAILED),
-        ("Processing", PROCESSING),
-        )
+    ("Success", SUCCESS),
+    ("Pending", PENDING),
+    ("Failed", FAILED),
+    ("Processing", PROCESSING),
+)
+
 
 # Create your models here.
 class BaseModel(models.Model):
@@ -45,10 +45,12 @@ class BaseModel(models.Model):
     class Meta:
         abstract = True
         constraints = [
-                models.CheckConstraint(
-                    name="%(app_label)s_%(class)s_name_not_empty",
-                    check=models.Q(name__length__gt=0))
-                ]
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_name_not_empty",
+                check=models.Q(name__length__gt=0),
+            )
+        ]
+
 
 class AppUser(AbstractUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -63,7 +65,8 @@ class Consultation(BaseModel):
     course = models.ForeignKey("Course", on_delete=models.CASCADE)
     status = models.CharField(max_length=15, choices=CONS_CHOICES)
     message = models.CharField(max_length=150, help_text="Anything you want us to know")
-    sheduled_date = models.DatetimeField()
+    sheduled_date = models.DateTimeField()
+
     def __str__(self):
         return "{} by {} with satatus{}".format(self.name, self.user.username, self.status)
 
@@ -72,7 +75,7 @@ class Payment(BaseModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     transaction_id = models.CharField(max_length=50)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    status = models.CharField(choices=PAYMENT_STATUS)
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS)
 
 
 class FeedBack(BaseModel):
@@ -92,20 +95,22 @@ class University(BaseModel):
     website = models.URLField(null=False, blank=False)
     history = models.TextField(help_text="brief history of university")
     country = models.ForeignKey(
-            'cities_light.Country',
-            on_delete=models.SET_NULL,
-            blank=True, null=True)
+        "cities_light.Country", on_delete=models.SET_NULL, blank=True, null=True
+    )
     city = models.ForeignKey(
-            'cities_light.City',
-            on_delete=models.SET_NULL,
-            blank=True, null=True)
+        "cities_light.City", on_delete=models.SET_NULL, blank=True, null=True
+    )
     postal_code = models.CharField(max_length=15, null=False, blank=False)
     accomodation = models.TextField(help_text="details of accomodation")
 
-    language = models.CharField(max_length=15, default="English", null=False)
+    languages = models.ManyToManyField("Language")
 
     def __str__(self):
         return self.name
+
+
+class Language(BaseModel):
+    pass
 
 
 class Department(BaseModel):
