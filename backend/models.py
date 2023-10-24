@@ -111,6 +111,21 @@ class University(BaseModel):
     accomodation = models.TextField(help_text="details of accomodation")
 
     languages = models.ManyToManyField(Language, blank=False)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        editable=False,
+        on_delete=models.SET_NULL,
+        related_name="universities",
+    )
+
+    def save(self, *args, **kwargs):
+        """Update some required  attributes"""
+
+        creator = kwargs.pop("user", None)  # get the user supplied from user.reqests
+        if creator and not self.created_by:
+            self.created_by = creator
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.name
