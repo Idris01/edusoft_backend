@@ -83,3 +83,29 @@ python manage.py runserver
 ```
 The above command runs the development server on port 8000
 so visit `127.0.0.1:8000/admin` from your browser
+
+
+### Running tests for APIs
+#### Setup
+The api test requires interraction with the database i.e `test_db.sqlite3` which is a copy of the default dev `db.sqlite3` database.
+
+1. Run (skip this step if `db.sqlite3` is already setup
+
+```
+python manage.py makemigrations [backend]
+python manage.py migrate
+python manage.py cities_light  # populate countries and cities (might take some time to complete)
+
+```
+
+2. Create the test db
+```
+cp db.sqlite3 test_db.sqlite3
+```
+
+3. Run the test
+
+``` 
+python manage.py test api
+```
+
