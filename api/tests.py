@@ -34,7 +34,7 @@ class TestUniversity(APITestCase):
 
     def test_university_list_ok(self):
         """test GET method on  /api/universities"""
-        url_name = "university_list_create"
+        url_name = "api:university_list_create"
         url = reverse(url_name)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
