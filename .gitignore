@@ -160,3 +160,7 @@ edusoft_venv
 #.idea/
 *migrations/
 static/
+.pre-commit-config.yaml
+pyproject.toml
+requirements_dev.txt
+test_db.sqlite3
