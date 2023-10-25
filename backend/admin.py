@@ -28,7 +28,11 @@ class AppUserAdmin(UserAdmin):
 
 @admin.register(University)
 class UniversityAdmin(admin.ModelAdmin):
-    pass
+    def save_model(self, request, obj, form, change):
+        """Update some required  attributes"""
+        if not obj.created_by:
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)
 
 
 @admin.register(Degree)
