@@ -27,10 +27,13 @@ class UniversitySerializer(serializers.ModelSerializer):
         return languages
 
     def get_created_by(self, obj):
-        return obj.created_by.username
+        if obj.created_by is not None:
+            return obj.created_by.username
 
     def get_city(self, obj):
-        return obj.city.name
+        if obj.city is not None:
+            return obj.city.name
 
     def get_country(self, obj):
-        return obj.country.name
+        if obj.country is not None:
+            return obj.country.name

@@ -25,7 +25,7 @@ class TestUniversity(APITestCase):
         cls.test_email = "idris@gmail.com"
         cls.test_username = "adeyemi"
         cls.university_data = dict(
-            name="University Of Lagos",
+            name="University of UnitTesting",
             country="NG",
             history="founded 1980",
             postal_code="230210",
@@ -57,11 +57,11 @@ class TestUniversity(APITestCase):
         self.obj_list = []
 
         country = Country.objects.get(code2="NG")  # get country using country code2
-        city = City.objects.get(country=country, name="Ogbomoso")
-        self.obj_list.append(city)
-        self.obj_list.append(country)
+        city, city_created = City.objects.get_or_create(country=country, name="Ogbomoso")
+        if city_created:
+            self.obj_list.append(city)
         university = University.objects.create(
-            name="Ladoke Akintola University of Technology",
+            name="Lautech",
             history="Founded August 1990",
             country=country,
             accomodation="On-campus accomodation available",
@@ -72,10 +72,12 @@ class TestUniversity(APITestCase):
 
         self.obj_list.append(university)
 
-        langs = ["Yoruba", "English", "Arabic"]
-        for index, lang in enumerate(langs):
-            langs[index] = Language(name=lang)
-            langs[index].save()
+        langs_name = ["Yoruba", "English", "Arabic"]
+        langs = []
+        for lang in langs_name:
+            new_lang, is_created = Language.objects.get_or_create(name=lang.title())
+            if is_created:
+                langs.append(new_lang)
 
         self.obj_list.extend(langs)
         university.languages.add(*langs)
@@ -97,4 +99,6 @@ class TestUniversity(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(initial_count + 1, University.objects.count())
         response_data = json.loads(response.content.decode("utf-8"))
-        self.assertEqual(str(self.test_user.id), response_data.get("created_by", None))
+        self.assertEqual(
+            str(self.test_user.username), response_data.get("created_by", None)
+        )

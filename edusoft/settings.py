@@ -153,10 +153,18 @@ CITIES_LIGHT_INCLUDE_COUNTRIES = (
 )
 CITIES_LIGHT_TRANSLATION_LANGUAGES = ["en"]
 
+# restframework settings
 if DEBUG:
     REST_FRAMEWORK = {
         "DEFAULT_AUTHENTICATION_CLASSES": [
             "rest_framework.authentication.BasicAuthentication",
             "rest_framework.authentication.SessionAuthentication",
-        ]
+        ],
+        "DEFAULT_PERMISSION_CLASSES": (
+            "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+        ),
+    }
+else:
+    REST_FRAMEWORK = {
+        "DEFAULT_RENDERER_CLASSES": ("rest_framework.renderers.JSONRenderer",)
     }

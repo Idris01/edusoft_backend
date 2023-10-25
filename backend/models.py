@@ -140,15 +140,14 @@ class Course(BaseModel):
 
 
 class Tuition(BaseModel):
-    degree = models.ForeignKey("Degree", on_delete=models.CASCADE)
-    course = models.ForeignKey("Course", on_delete=models.CASCADE)
+    degrees = models.ManyToManyField("Degree", blank=True)
     amount = models.DecimalField(
         max_digits=9, decimal_places=2, help_text="tuition fee in dollars ($)"
     )
     detail = models.TextField(help_text="details info about the tuition fee")
 
     def __str__(self):
-        return "${} for {} in {}".format(self.amount, self.degree.name, self.course.name)
+        return "$Tution: {}".format(self.amount)
 
 
 class Degree(BaseModel):
@@ -156,7 +155,7 @@ class Degree(BaseModel):
     about = models.TextField(help_text="breif details about degree")
 
     def __str__(self):
-        return self.name
+        return f"{self.name}: {self.course}"
 
 
 class Officer(BaseModel):
