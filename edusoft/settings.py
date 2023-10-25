@@ -89,11 +89,9 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
-        "TEST": {
-            "NAME": BASE_DIR / "test_db.sqlite3"
-            }
-        }
+        "TEST": {"NAME": BASE_DIR / "test_db.sqlite3"},
     }
+}
 
 if not DEBUG:
     # setup production database
@@ -154,3 +152,11 @@ CITIES_LIGHT_INCLUDE_COUNTRIES = (
     else os.getenv("LIGHT_COUNTRIES").upper().split(",")
 )
 CITIES_LIGHT_TRANSLATION_LANGUAGES = ["en"]
+
+if DEBUG:
+    REST_FRAMEWORK = {
+        "DEFAULT_AUTHENTICATION_CLASSES": [
+            "rest_framework.authentication.BasicAuthentication",
+            "rest_framework.authentication.SessionAuthentication",
+        ]
+    }

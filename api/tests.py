@@ -34,7 +34,9 @@ class TestUniversity(APITestCase):
             city="lagos",
             website="https://www.lasu.com",
         )
-        cls.test_user = AppUser.objects.create(
+
+        # create a test user for use when authentication is requied
+        cls.test_user = AppUser.objects.create_user(
             email=cls.test_email,
             password=cls.test_password,
             username=cls.test_username,
@@ -95,4 +97,4 @@ class TestUniversity(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(initial_count + 1, University.objects.count())
         response_data = json.loads(response.content.decode("utf-8"))
-        self.assertEqual(self.test_username, response_data.get("created_by", None))
+        self.assertEqual(str(self.test_user.id), response_data.get("created_by", None))

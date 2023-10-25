@@ -10,10 +10,18 @@ from django.contrib.auth.models import AnonymousUser
 class UniversityListCreateAPIView(ListCreateAPIView):
     queryset = University.objects.all()
     serializer_class = UniversitySerializer
+    # permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         data = {key: ",".join(value) for key, value in dict(request.data).items()}
         errors = {}
+
+        # check the required permission
+        if isinstance(request.user, AnonymousUser) or not request.user.is_staff:
+            return Response(
+                dict(message="Only Permission denied"), status=status.HTTP_401_UNAUTHORIZED
+            )
+
         country_name = ""
         if "country" in data:
             country_code = data.get("country")
@@ -25,12 +33,15 @@ class UniversityListCreateAPIView(ListCreateAPIView):
             else:
                 errors["country"] = "Unknown country {}".format(data["country"])
         if "country" in data and "city" in data:
-            city = City.objects.filter(country__name=country_name, name__iexact=data.get("city"))
+            city = City.objects.filter(
+                country__name=country_name, name__iexact=data.get("city")
+            )
             if city:
                 data["city"] = city[0].id
             else:
                 errors["city"] = "city {} not found in {}".format(
-                        data.get("city"),country_name)
+                    data.get("city"), country_name
+                )
 
         if "languages" in data:
             language_list = []
@@ -47,13 +58,9 @@ class UniversityListCreateAPIView(ListCreateAPIView):
                 data["languages"] = language_list
         if errors:
             return Response(errors, status=status.HTTP_400_BAD_REQUEST)
-            new_university = ""
-        if not isinstance(request.user, AnonymousUser):
-            new_university = UniversitySerializer(data=data, user=request.user)
-        else:
-            new_university = UniversitySerializer(data=data)
+        new_university = UniversitySerializer(data=data)
 
         if new_university.is_valid():
-            new_university.save()
+            new_university.save(created_by=request.user)  # add the creator
             return Response(new_university.data, status=status.HTTP_201_CREATED)
         return Response(new_university.errors, status=status.HTTP_400_BAD_REQUEST)
