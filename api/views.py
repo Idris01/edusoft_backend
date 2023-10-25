@@ -1,6 +1,6 @@
 from rest_framework.generics import ListCreateAPIView
 from backend.models import University, Language
-from cities_light.models import Country
+from cities_light.models import Country, City
 from .serializers import UniversitySerializer
 from rest_framework.response import Response
 from rest_framework import status
@@ -13,11 +13,25 @@ class UniversityListCreateAPIView(ListCreateAPIView):
 
     def post(self, request, *args, **kwargs):
         data = {key: ",".join(value) for key, value in dict(request.data).items()}
+        errors = {}
+        country_name = ""
         if "country" in data:
             country_code = data.get("country")
             country = Country.objects.filter(code2__iexact=country_code)
             if country:
-                data["country"] = country[0].id
+                country = country[0]
+                country_name = country.name
+                data["country"] = country.id
+            else:
+                errors["country"] = "Unknown country {}".format(data["country"])
+        if "country" in data and "city" in data:
+            city = City.objects.filter(country__name=country_name, name__iexact=data.get("city"))
+            if city:
+                data["city"] = city[0].id
+            else:
+                errors["city"] = "city {} not found in {}".format(
+                        data.get("city"),country_name)
+
         if "languages" in data:
             language_list = []
             for language in data.get("languages").split(","):
@@ -31,14 +45,15 @@ class UniversityListCreateAPIView(ListCreateAPIView):
                     pass
             if language_list:
                 data["languages"] = language_list
-
+        if errors:
+            return Response(errors, status=status.HTTP_400_BAD_REQUEST)
             new_university = ""
-            if not isinstance(request.user, AnonymousUser):
-                new_university = UniversitySerializer(data=data, user=request.user)
-            else:
-                new_university = UniversitySerializer(data=data)
+        if not isinstance(request.user, AnonymousUser):
+            new_university = UniversitySerializer(data=data, user=request.user)
+        else:
+            new_university = UniversitySerializer(data=data)
 
-            if new_university.is_valid():
-                new_university.save()
-                return Response(new_university.data, status=status.HTTP_201_CREATED)
-            return Response(new_university.errors, status=status.HTTP_400_BAD_REQUEST)
+        if new_university.is_valid():
+            new_university.save()
+            return Response(new_university.data, status=status.HTTP_201_CREATED)
+        return Response(new_university.errors, status=status.HTTP_400_BAD_REQUEST)

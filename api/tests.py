@@ -3,11 +3,6 @@ from backend.models import University, Language
 from cities_light.models import Country, City
 from rest_framework import status
 from django.urls import reverse
-import os
-import shutil
-import sys
-from time import sleep
-from pathlib import Path
 
 """DEfine tests for edusoft APIs"""
 
@@ -23,11 +18,6 @@ class TestUniversity(APITestCase):
     @classmethod
     def setUpClass(cls):
         """setup data for the whole test"""
-        if not Path(test_db_name).exists():
-            print(f"{test_db_name} required but not found")
-            print("do cp {} {}, to co create one".format(
-                db_name, test_db_name))
-            sys.exit(1)
         cls.url_name = "api:university_list_create"
         cls.url = reverse(cls.url_name)
 
@@ -74,6 +64,7 @@ class TestUniversity(APITestCase):
 
     def test_university_post(self):
         """test POST method on /api/universities"""
+        initial_count = University.objects.count()
         data = dict(
                 name="University Of Lagos",
                 country="NG",
@@ -86,10 +77,12 @@ class TestUniversity(APITestCase):
         response = self.client.post(self.url,data)
         if response.status_code == status.HTTP_201_CREATED:
             self.obj_list.append(
-                    University.objects.all()[-1]
+                    University.objects.last()
                     )
         print(response.content.decode("utf-8"))
         self.assertEqual(
                 response.status_code,
                 status.HTTP_201_CREATED)
-        
+        self.assertEqual(
+                initial_count + 1,
+                University.objects.count())
