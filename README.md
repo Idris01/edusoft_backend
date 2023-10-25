@@ -10,22 +10,30 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
 - URL Queries:
   - limit: number of items return e.g
 ```
-/api/universites?limit=10  # return the first 10 items
+/api/universities?limit=10
 ```
 - Response:
 ```
 {
-	prev: null,
-	next: <uuid: next_id>,
-	data: [
-		{
-			name: 'Ladoke Akintola University of Technology',
-			couses: 25,
-			country: 'Nigeria',
-			...
-		}
-		...
-		]
+    "count": 3,
+    "next": "<BASE_URL>/api/universities/?page=2",
+    "previous": "<BASE_URL>/api/universities/",
+    "results": [
+        {
+            "id": "f8497301-0e9f-403f-9b84-6fa38c18d336",
+            "name": "Ladoke Akintola University of Technology",
+            "history": "Founded in August 1990, with the aim of making education accessible to the masses of Oyo state",
+            "languages": [
+                "Yoruba",
+                "English"
+            ],
+            "created_by": "idris",
+            "country": "Nigeria",
+            "city": "Ogbomoso",
+            "accomodation": "Off-campus Accomodation",
+            "website": "https://www.lautech.edu.ng"
+        }
+    ]
 }
 ```
 
@@ -105,7 +113,6 @@ cp db.sqlite3 test_db.sqlite3
 
 3. Run the test
 
-``` 
+```
 python manage.py test api --keepdb
 ```
-
