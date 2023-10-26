@@ -79,16 +79,15 @@ WSGI_APPLICATION = "edusoft.wsgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-        "TEST": {"NAME": BASE_DIR / "test_db.sqlite3"},
-    }
-}
-
-if not DEBUG:
+if DEBUG:
+    DATABASES = {
+            "default": {
+                "ENGINE": "django.db.backends.sqlite3",
+                "NAME": BASE_DIR / "db.sqlite3",
+                "TEST": {"NAME": BASE_DIR / "test_db.sqlite3"},
+                }
+            }
+else:
     # setup production database
     DATABASES = {
         "default": {
@@ -187,3 +186,6 @@ else:
 
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
+    CSRF_TRUSTED_ORIGINS = (
+            [] if not os.getenv('CSRF_TRUSTED_ORIGINS', None) else
+            os.getenv('CSRF_TRUSTED_ORIGINS').split(','))
