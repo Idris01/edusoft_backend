@@ -9,6 +9,7 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
 - Description: Get the list of all universities
 - URL Queries:
   - limit: number of items return e.g
+  - search: search universities based on course e.g `/api/universities/?search=software` return a list of universities that offers courses containing software
 ```
 /api/universities?limit=10
 ```

@@ -3,13 +3,15 @@ from backend.models import University, Language
 from cities_light.models import Country, City
 from .serializers import UniversitySerializer
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, filters
 from django.contrib.auth.models import AnonymousUser
 
 
 class UniversityListCreateAPIView(ListCreateAPIView):
     queryset = University.objects.all()
     serializer_class = UniversitySerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["$department__course__name"]
     # permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
