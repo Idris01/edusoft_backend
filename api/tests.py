@@ -1,5 +1,5 @@
 from rest_framework.test import APITestCase
-from backend.models import University, Language, AppUser
+from backend.models import University, Language, AppUser, Department, Course
 from cities_light.models import Country, City
 from rest_framework import status
 from django.urls import reverse
@@ -52,6 +52,8 @@ class TestUniversity(APITestCase):
         for obj in self.obj_list:
             obj.delete()
         self.obj_list = []
+        if self.client.login:
+            self.client.logout()
 
     def setUp(self):
         """Create sample data for testing"""
@@ -104,3 +106,64 @@ class TestUniversity(APITestCase):
         self.assertEqual(
             str(self.test_user.username), response_data.get("created_by", None)
         )
+
+    def test_university_course_search(self):
+        """Test filtering of University against Course"""
+
+        country = Country.objects.get(code2="NG")  # get country using country code2
+        city, city_created = City.objects.get_or_create(country=country, name="Ogbomoso")
+        if city_created:
+            self.obj_list.append(city)
+
+        uni_count1 = University.objects.count()
+
+        # Create the first University, with a department and a course
+        uni1 = University.objects.create(
+            name="Uni1",
+            history="Founded August 1990",
+            country=country,
+            accomodation="On-campus accomodation available",
+            postal_code="210212",
+            city=city,
+            website="www.uni1.edu.ng",
+        )
+        self.obj_list.append(uni1)
+        dep1 = Department.objects.create(
+            name="dep1", university=uni1, about="departement of dept1"
+        )
+        self.obj_list.append(dep1)
+        course1 = Course.objects.create(
+            name="Agricutltural Science",
+            department=dep1,
+            about="Study of Agricultural Science",
+        )
+        self.obj_list.append(course1)
+
+        # create the second University, with a department and a course
+        uni2 = University.objects.create(
+            name="Uni2",
+            history="Founded August 1990",
+            country=country,
+            accomodation="On-campus accomodation available",
+            postal_code="210212",
+            city=city,
+            website="www.uni2.edu.ng",
+        )
+        self.obj_list.append(uni2)
+        dep2 = Department.objects.create(
+            name="dep2", university=uni2, about="departement of dept2"
+        )
+        self.obj_list.append(dep2)
+        course2 = Course.objects.create(
+            name="Software engineering",
+            department=dep2,
+            about="Study of Agricultural Science",
+        )
+        self.obj_list.append(course2)
+
+        self.assertEqual(uni_count1 + 2, University.objects.count())
+
+        resp = self.client.get(self.url + "?search=software")
+        resp_data = json.loads(resp.content.decode("utf-8"))
+        self.assertEqual(len(resp_data["results"]), 1)
+        self.assertEqual(resp_data["results"][0]["name"], "Uni2")
