@@ -17,7 +17,7 @@ class UniversityListCreateAPIView(ListCreateAPIView):
         errors = {}
 
         # check the required permission
-        if isinstance(request.user, AnonymousUser) or not request.user.is_staff:
+        if isinstance(request.user, AnonymousUser) or not request.user.is_superuser:
             return Response(
                 dict(message="Only Permission denied"), status=status.HTTP_401_UNAUTHORIZED
             )

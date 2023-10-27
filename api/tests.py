@@ -43,7 +43,9 @@ class TestUniversity(APITestCase):
             first_name="ade",
             last_name="idris",
         )
+
         cls.test_user.is_staff = True
+        cls.test_user.is_superuser = True
         cls.test_user.save()
 
     def tearDown(self):
