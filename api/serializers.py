@@ -7,6 +7,8 @@ class UniversitySerializer(serializers.ModelSerializer):
     country = serializers.SerializerMethodField()
     languages = serializers.SerializerMethodField()
     created_by = serializers.SerializerMethodField(read_only=True)
+    country_code = serializers.SerializerMethodField(read_only=True)
+
 
     class Meta:
         model = University
@@ -20,6 +22,8 @@ class UniversitySerializer(serializers.ModelSerializer):
             "city",
             "accomodation",
             "website",
+            "postal_code",
+            "country_code"
         ]
 
     def get_languages(self, obj):
@@ -37,3 +41,7 @@ class UniversitySerializer(serializers.ModelSerializer):
     def get_country(self, obj):
         if obj.country is not None:
             return obj.country.name
+
+    def get_country_code(self, obj):
+        if obj.country is not None:
+            return obj.country.code2

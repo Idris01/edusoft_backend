@@ -5,7 +5,7 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
 ## API documentation
 
 ### `/api/universites`
-- Methods: `GET`
+- Methods: `GET`, `POST`
 - Description: Get the list of all universities
 - URL Queries:
   - limit: number of items return e.g
@@ -38,9 +38,25 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
 }
 ```
 
-### `/api/universities/<uuid:university_id>`
-- Methods: `GET`
-- Description: Get the detail of a given university
+### `/api/universities/<slug:id>`
+- Methods: `GET`, `PUT`, `DELETE`
+- Description: 
+   - *GET* Request:
+   Get the detail of a University of `id`
+
+```
+curl -X GET <base_url>/universities/f8497301-0e9f-403f-9b84-6fa38c18d336
+```
+   - Response Body
+
+```
+{'id': 'f8497301-0e9f-403f-9b84-6fa38c18d336', 'name': 'Lagos State University', 'history': 'Founded August 1990', 'languages': ['Yoruba', 'English'], 'created_by': 'adeyemi', 'country': 'Nigeria', 'city': 'Lagos', 'accomodation': 'On-campus accomodation available', 'website': 'https://www.unilag.edu.ng', 'postal_code': '210500', 'country_code': 'NG'}
+```
+   - *PUT* Request:
+   Update details of a University of `id`
+
+   - *DELETE* Request:
+   Delete the University described by `id`
 
 
 ## Data Model Diagram

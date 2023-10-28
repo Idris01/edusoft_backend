@@ -208,15 +208,14 @@ class TestUniversity(APITestCase):
                 history="Founded August 1990",
                 country='NG',
                 accomodation="On-campus accomodation available",
+                languages=['English','Yoruba'],
                 postal_code="210500",
                 city="Lagos",
-                website="https://www.uni1.edu.ng"
+                website="https://www.unilag.edu.ng"
                 )
 
         self.obj_list.append(uni1)
 
-
-        
         url = reverse(
                 "api:university_detail",
                 kwargs={"id":str(uni1.id)})
@@ -244,8 +243,56 @@ class TestUniversity(APITestCase):
 
         data = json.loads(response.content.decode("utf-8"))
         self.assertEqual(
+                str(uni1.id),
+                data.get("id"))
+        self.assertEqual(
                 data.get('name'),
                 new_data["name"])
         self.assertEqual(
-                data.get('country'),
-                "Nigeria")
+                data.get('country_code'),
+                new_data['country'])
+        self.assertEqual(
+                data.get('city'),
+                new_data["city"])
+        self.assertEqual(
+                data.get('postal_code'),
+                new_data["postal_code"])
+        self.assertEqual(
+                data.get('website'),
+                new_data["website"])
+        self.assertEqual(
+                data.get('history'),
+                new_data["history"])
+        self.assertEqual(
+                sorted(data.get('languages')),
+                sorted(new_data["languages"]))
+        self.assertEqual(
+                data.get('accomodation'),
+                new_data["accomodation"])
+
+        # test the get endpoint with Anonymous user
+        self.client.logout()
+        result = self.client.get(url)
+        self.assertEqual(result.status_code, status.HTTP_200_OK)
+
+        # test delete endpoint with Anonymous user
+        result = self.client.delete(url)
+        self.assertEqual(result.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        # test delete endpoint with regular user
+        self.client.login(
+                email=self.app_user_email,
+                password=self.app_user_passwd)
+
+        result = self.client.delete(url)
+        self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.logout()
+
+        # test delete endpoint with Admin user
+        self.client.login(
+                email=self.test_email,
+                password=self.test_password)
+
+        result = self.client.delete(url)
+        self.assertEqual(result.status_code, status.HTTP_204_NO_CONTENT)
