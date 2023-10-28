@@ -15,6 +15,7 @@ class TestUniversity(APITestCase):
     def tearDownClass(cls):
         """Cleanup the test data"""
         cls.test_user.delete()
+        cls.app_user.delete()
 
     @classmethod
     def setUpClass(cls):
@@ -22,7 +23,7 @@ class TestUniversity(APITestCase):
         cls.url_name = "api:university_list_create"
         cls.url = reverse(cls.url_name)
         cls.test_password = "mypassword@1"
-        cls.test_email = "idris@gmail.com"
+        cls.test_email = "idris01@gmail.com"
         cls.test_username = "adeyemi"
         cls.university_data = dict(
             name="University of UnitTesting",
@@ -35,7 +36,7 @@ class TestUniversity(APITestCase):
             website="https://www.lasu.com",
         )
 
-        # create a test user for use when authentication is requied
+        # create admin user
         cls.test_user = AppUser.objects.create_user(
             email=cls.test_email,
             password=cls.test_password,
@@ -43,10 +44,22 @@ class TestUniversity(APITestCase):
             first_name="ade",
             last_name="idris",
         )
-
         cls.test_user.is_staff = True
         cls.test_user.is_superuser = True
         cls.test_user.save()
+
+        # create  non-admin user
+        cls.app_user_email="idris01@yahoo.com"
+        cls.app_user_passwd="appUser1"
+        cls.app_user = AppUser.objects.create_user(
+            email=cls.app_user_email,
+            password=cls.app_user_passwd,
+            username="ade",
+            first_name="yemi",
+            last_name="folohunso",
+        )
+
+
 
     def tearDown(self):
         for obj in self.obj_list:
@@ -167,3 +180,72 @@ class TestUniversity(APITestCase):
         resp_data = json.loads(resp.content.decode("utf-8"))
         self.assertEqual(len(resp_data["results"]), 1)
         self.assertEqual(resp_data["results"][0]["name"], "Uni2")
+
+    def test_university_update(self):
+        """Test updating university attributes"""
+
+        country = Country.objects.get(code2="GB")  # get country using country code2
+        city, city_created = City.objects.get_or_create(country=country, name="London")
+        if city_created:
+            self.obj_list.append(city)
+
+        uni_count1 = University.objects.count()
+
+        # Create the first University, with a department and a course
+        uni1 = University.objects.create(
+            name="Uni1",
+            history="Founded August 1990",
+            country=country,
+            accomodation="On-campus accomodation available",
+            postal_code="210212",
+            city=city,
+            website="www.uni1.edu.ng",
+            created_by=self.test_user
+        )
+
+        new_data = dict(
+                name="Lagos State University",
+                history="Founded August 1990",
+                country='NG',
+                accomodation="On-campus accomodation available",
+                postal_code="210500",
+                city="Lagos",
+                website="https://www.uni1.edu.ng"
+                )
+
+        self.obj_list.append(uni1)
+
+
+        
+        url = reverse(
+                "api:university_detail",
+                kwargs={"id":str(uni1.id)})
+
+        # request from anonymous user
+        response = self.client.put(url, new_data)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.client.login(
+                email=self.app_user_email,
+                password=self.app_user_passwd)
+
+        # request from non admin user
+        response = self.client.put(url, new_data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+        self.client.logout()
+        self.client.login(
+                email=self.test_email,
+                password=self.test_password)
+
+        # request from admin user
+        response = self.client.put(url, new_data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = json.loads(response.content.decode("utf-8"))
+        self.assertEqual(
+                data.get('name'),
+                new_data["name"])
+        self.assertEqual(
+                data.get('country'),
+                "Nigeria")
