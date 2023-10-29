@@ -3,11 +3,16 @@ from rest_framework.generics import (
         RetrieveUpdateDestroyAPIView)
 from backend.models import University, Language
 from cities_light.models import Country, City
-from .serializers import UniversitySerializer
+from .serializers import (
+        UniversitySerializer, UserSerializer)
 from rest_framework.response import Response
 from rest_framework import status, filters, renderers
 from django.contrib.auth.models import AnonymousUser
 from .permissions import IsAdminOrReadOnly
+
+class UserListCreateAPIView(ListCreateAPIView):
+    serializer_class = UserSerializer
+
 
 class UniversityDetailAPIView(RetrieveUpdateDestroyAPIView):
     queryset = University.objects.all()

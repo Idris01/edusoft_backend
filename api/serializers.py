@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from backend.models import University
+from backend.models import University, AppUser
 
 
 class UniversitySerializer(serializers.ModelSerializer):
@@ -45,3 +45,9 @@ class UniversitySerializer(serializers.ModelSerializer):
     def get_country_code(self, obj):
         if obj.country is not None:
             return obj.country.code2
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AppUser
+        fields = "__all__"

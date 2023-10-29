@@ -131,5 +131,5 @@ cp db.sqlite3 test_db.sqlite3
 3. Run the test
 
 ```
-python manage.py test api --keepdb
+python manage.py test api/tests --keepdb
 ```
