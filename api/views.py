@@ -9,9 +9,13 @@ from rest_framework.response import Response
 from rest_framework import status, filters, renderers
 from django.contrib.auth.models import AnonymousUser
 from .permissions import IsAdminOrReadOnly
+from rest_framework.authentication import BasicAuthentication, SessionAuthentication
+
 
 class UserListCreateAPIView(ListCreateAPIView):
     serializer_class = UserSerializer
+    # authentication_classes = [SessionAuthentication, BasicAuthentication]
+    # authorization_classes = []
 
 
 class UniversityDetailAPIView(RetrieveUpdateDestroyAPIView):
@@ -19,6 +23,7 @@ class UniversityDetailAPIView(RetrieveUpdateDestroyAPIView):
     lookup_field = "id"
     serializer_class = UniversitySerializer
     permission_classes = [IsAdminOrReadOnly]
+    authentication_classes = [SessionAuthentication,BasicAuthentication]
 
     def put(self, request, *args, **kwargs):
         response = self.update(request, *args, **kwargs)
@@ -61,6 +66,7 @@ class UniversityListCreateAPIView(ListCreateAPIView):
     queryset = University.objects.all()
     serializer_class = UniversitySerializer
     filter_backends = [filters.SearchFilter]
+    authentication_classes = [SessionAuthentication, BasicAuthentication]
     search_fields = ["$department__course__name"]
 
     def post(self, request, *args, **kwargs):
@@ -70,7 +76,7 @@ class UniversityListCreateAPIView(ListCreateAPIView):
         # check the required permission
         if isinstance(request.user, AnonymousUser) or not request.user.is_superuser:
             return Response(
-                dict(message="Only Permission denied"), status=status.HTTP_401_UNAUTHORIZED
+                dict(message="Permission denied"), status=status.HTTP_401_UNAUTHORIZED
             )
 
         country_name = ""

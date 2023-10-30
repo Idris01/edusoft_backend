@@ -222,7 +222,7 @@ class TestUniversity(APITestCase):
 
         # request from anonymous user
         response = self.client.put(url, new_data)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
         self.client.login(
                 email=self.app_user_email,
@@ -277,7 +277,7 @@ class TestUniversity(APITestCase):
 
         # test delete endpoint with Anonymous user
         result = self.client.delete(url)
-        self.assertEqual(result.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
 
         # test delete endpoint with regular user
         self.client.login(

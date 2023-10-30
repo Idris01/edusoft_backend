@@ -31,7 +31,8 @@ class AppUserTest(APITestCase):
         """Test new user created successfully"""
         email="teste1@gmail.com"
         password="@iWill9evergiveUp"
-        
+
+        print(self.client.logout())
         data = dict(
                 username="Tester1",
                 email=email,
