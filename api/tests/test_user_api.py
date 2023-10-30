@@ -62,6 +62,56 @@ class AppUserTest(APITestCase):
         for obj in self.obj_list:
             obj.delete()
 
+    def test_login_user(self):
+        """Test userlogin with token"""
+        login_url = reverse("api:user_login")
+        email = "testlogin@gmail.com"
+        password = "@Iwill9evergiveUp"
+        username="loginTester"
+
+        data = dict(
+            username=username,
+            email=email,
+            first_name="testlogin",
+            last_name="user",
+            password=password,
+            confirm_password=password,
+        )
+        
+        # register the new user
+        response = self.client.post(
+                self.registration_url,
+                data=data)
+
+        reg_user = AppUser.objects.filter(email=email)
+        
+        if reg_user:
+            # add user to objects to be deleted during cleanuo
+            self.obj_list.append(reg_user[0])
+
+        # assert that the user was successfully created
+        self.assertEqual(
+                response.status_code,
+                status.HTTP_201_CREATED)
+
+        # login the user, this should return some token
+        response = self.client.post(
+                login_url,
+                data=dict(
+                    email=email,
+                    password=password))
+        self.assertEqual(
+                response.status_code,
+                status.HTTP_200_OK)
+        content = json.loads(
+                response.content.decode('utf-8'))
+        self.assertEqual(email, content.get('email'))
+        self.assertEqual(username, content.get('username'))
+        self.assertIn("access_token", content)
+        self.assertIn("refresh_token", content)
+        self.assertIn("expire_in", content)
+
+
     def test_create_user(self):
         """Test new user created successfully"""
         email = "teste1@gmail.com"
