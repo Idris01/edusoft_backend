@@ -105,11 +105,16 @@ class AppUserTest(APITestCase):
                 status.HTTP_200_OK)
         content = json.loads(
                 response.content.decode('utf-8'))
+        
         self.assertEqual(email, content.get('email'))
         self.assertEqual(username, content.get('username'))
-        self.assertIn("access_token", content)
-        self.assertIn("refresh_token", content)
-        self.assertIn("expire_in", content)
+        self.assertIn("access", content)
+        self.assertIn("refresh", content)
+        self.assertIn("refresh_expires_at", content)
+        self.assertIn("access_expires_at", content)
+        self.assertGreater(
+                content.get("refresh_expires_at"),
+                content.get("access_expires_at"))
 
 
     def test_create_user(self):

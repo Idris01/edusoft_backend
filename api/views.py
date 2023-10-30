@@ -1,14 +1,32 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
 from backend.models import University, Language, AppUser
 from cities_light.models import Country, City
-from .serializers import UniversitySerializer, UserSerializer
+from .serializers import (
+        UniversitySerializer, 
+        UserSerializer,
+        EdusoftTokenObtainPairSerializer)
 from rest_framework.response import Response
 from rest_framework import status, filters
 from django.contrib.auth.models import AnonymousUser
 from .permissions import IsAdminOrReadOnly, IsAdminReadOnly
 from django.conf import settings
 import re
+from rest_framework_simplejwt.views import TokenObtainPairView
+import json
 
+class EdusoftTokenObtainPairView(TokenObtainPairView):
+    serializer_class = EdusoftTokenObtainPairSerializer
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        if response.status_code == 200:
+            user = AppUser.objects.get(email=request.data.get("email"))
+            response.data['username'] = user.username
+            response.data['email'] = user.email
+            refresh_expires_at = self.token_refresh_sliding_lifetime
+            access_expires_at = self.token_access_sliding_lifetime
+            response.data["refresh_expires_at"] = refresh_expires_at
+            response.data["access_expires_at"] = access_expires_at
+        return response
 
 class UserListCreateAPIView(ListCreateAPIView):
     serializer_class = UserSerializer

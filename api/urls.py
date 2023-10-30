@@ -2,7 +2,10 @@ from django.urls import path
 from .views import (
         UniversityListCreateAPIView,
         UniversityDetailAPIView,
-        UserListCreateAPIView)
+        UserListCreateAPIView,
+        EdusoftTokenObtainPairView)
+from rest_framework_simplejwt.views import TokenRefreshView
+
 
 app_name = "api"
 
@@ -19,5 +22,8 @@ urlpatterns = [
         "users/",
         UserListCreateAPIView.as_view(),
         name="user_list_create"),
-    
+    path(
+        "token/",
+        EdusoftTokenObtainPairView.as_view(),
+        name="user_login")
 ]
