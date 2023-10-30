@@ -14,24 +14,27 @@ class UserListCreateAPIView(ListCreateAPIView):
     serializer_class = UserSerializer
     queryset = AppUser.objects.all()
     permission_classes = [IsAdminReadOnly]
+    required_fields = [
+            "username", "password","first_name",
+            "confirm_password", "email", "last_name"]
 
     def post(self, request, *args, **kwargs):
-        first_name = request.data.get("first_name")
-        last_name = request.data.get("last_name")
 
-        if not first_name:
-            return Response(
-                dict(first_name=["This field is reqired"]),
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        if not last_name:
-            return Response(
-                dict(last_name=["This field is required"]),
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        data = dict(request.data)
+        user_data = {
+                item:data.get(item,[None])[0]  for item in self.required_fields}
 
-        password = request.data.get("password")
-        confirm_password = request.data.get("confirm_password")
+        first_name = user_data.get("first_name")
+        last_name = user_data.get("last_name")
+
+        for key, value in user_data.items():
+            if not value:
+                return Response(
+                        {key : ["This field is reqired"]},
+                        status=status.HTTP_400_BAD_REQUEST)
+        
+        password = user_data.get("password")
+        confirm_password = user_data.get("confirm_password")
         if password and confirm_password:
             if password != confirm_password:
                 return Response(
@@ -68,16 +71,21 @@ class UserListCreateAPIView(ListCreateAPIView):
                             )
                         ]
                     ),
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-        if not confirm_password:
+                    status=status.HTTP_400_BAD_REQUEST)
+        serialized_data = self.serializer_class(
+                data=user_data)
+        
+        del user_data["confirm_password"] # remove confirmation data
+        if serialized_data.is_valid():
+            AppUser.objects.create_user(
+                    **user_data)
             return Response(
-                dict(confirm_password=["This field is required"]),
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+                    dict(message="registration successfull"),
+                    status=status.HTTP_201_CREATED)
 
-        return self.create(request, *args, **kwargs)
+        return Response(
+                serialized_data.errors,
+                status=status.HTTP_400_BAD_REQUEST)
 
 
 class UniversityDetailAPIView(RetrieveUpdateDestroyAPIView):

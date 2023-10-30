@@ -44,6 +44,7 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
+        ordering = ("name",)
         constraints = [
             models.CheckConstraint(
                 name="%(app_label)s_%(class)s_name_not_empty",

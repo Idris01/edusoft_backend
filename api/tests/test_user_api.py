@@ -67,9 +67,12 @@ class AppUserTest(APITestCase):
         email = "teste1@gmail.com"
         password = "@iWill9evergiveUp"
 
+        user_count = AppUser.objects.count()
+
         data = dict(
             username="Tester1",
             email=email,
+            is_staff=True,
             first_name="test",
             last_name="user",
             password=password,
@@ -99,8 +102,8 @@ class AppUserTest(APITestCase):
             json.loads(response.content.decode("utf-8"))["password"][0].lower(),
         )
 
-        data["confirm_password"] = "never giveup"
-        data["password"] = "never giveup"
+        data["confirm_password"] = "donot giveup"
+        data["password"] = "donot giveup"
 
         response = self.client.post(self.registration_url, data=data)
 
@@ -148,6 +151,16 @@ class AppUserTest(APITestCase):
         response = self.client.post(self.registration_url, data=data)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        
+        response_data = json.loads(response.content.decode('utf-8'))
+        self.assertIn(
+                "registration successfull",
+                response_data.get("message", []))
+
+        # confirm the user is indeed created
+        self.assertEqual(
+                user_count + 1,
+                AppUser.objects.count())
 
     def test_create_user_missing_requirements(self):
         """Test new user created successfully"""
