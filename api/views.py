@@ -1,21 +1,83 @@
-from rest_framework.generics import (
-        ListCreateAPIView,
-        RetrieveUpdateDestroyAPIView)
-from backend.models import University, Language
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from backend.models import University, Language, AppUser
 from cities_light.models import Country, City
-from .serializers import (
-        UniversitySerializer, UserSerializer)
+from .serializers import UniversitySerializer, UserSerializer
 from rest_framework.response import Response
-from rest_framework import status, filters, renderers
+from rest_framework import status, filters
 from django.contrib.auth.models import AnonymousUser
-from .permissions import IsAdminOrReadOnly
-from rest_framework.authentication import BasicAuthentication, SessionAuthentication
+from .permissions import IsAdminOrReadOnly, IsAdminReadOnly
+from django.conf import settings
+import re
 
 
 class UserListCreateAPIView(ListCreateAPIView):
     serializer_class = UserSerializer
-    # authentication_classes = [SessionAuthentication, BasicAuthentication]
-    # authorization_classes = []
+    queryset = AppUser.objects.all()
+    permission_classes = [IsAdminReadOnly]
+
+    def post(self, request, *args, **kwargs):
+        first_name = request.data.get("first_name")
+        last_name = request.data.get("last_name")
+
+        if not first_name:
+            return Response(
+                dict(first_name=["This field is reqired"]),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if not last_name:
+            return Response(
+                dict(last_name=["This field is required"]),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        password = request.data.get("password")
+        confirm_password = request.data.get("confirm_password")
+        if password and confirm_password:
+            if password != confirm_password:
+                return Response(
+                    dict(password=["password mismatch"]),
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            elif len(password) < settings.MINIMUM_PASSWORD_SIZE:
+                return Response(
+                    dict(password=["password too short"]),
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            elif re.search(r"[\s]+", password):
+                return Response(
+                    dict(password=["password must not include space"]),
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            elif not all(
+                (
+                    re.search("[a-z]+", password),
+                    re.search("[A-Z]+", password),
+                    re.search("[^a-zA-z0-9]+", password),
+                    re.search("[0-9]+", password),
+                )
+            ):
+                return Response(
+                    dict(
+                        password=[
+                            " ".join(
+                                (
+                                    "password must have lower",
+                                    "and uppercase, number and special char",
+                                )
+                            )
+                        ]
+                    ),
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        if not confirm_password:
+            return Response(
+                dict(confirm_password=["This field is required"]),
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        return self.create(request, *args, **kwargs)
 
 
 class UniversityDetailAPIView(RetrieveUpdateDestroyAPIView):
@@ -23,18 +85,16 @@ class UniversityDetailAPIView(RetrieveUpdateDestroyAPIView):
     lookup_field = "id"
     serializer_class = UniversitySerializer
     permission_classes = [IsAdminOrReadOnly]
-    authentication_classes = [SessionAuthentication,BasicAuthentication]
 
     def put(self, request, *args, **kwargs):
         response = self.update(request, *args, **kwargs)
-        
+
         data = dict(request.data)
         data_keys = list(data.keys())
         if response.status_code > 299:
-            return response 
+            return response
 
-        uni = University.objects.get(
-                id=kwargs.get(self.lookup_field))
+        uni = University.objects.get(id=kwargs.get(self.lookup_field))
 
         if "languages" in data_keys and data["languages"]:
             lang_list = []
@@ -51,22 +111,17 @@ class UniversityDetailAPIView(RetrieveUpdateDestroyAPIView):
                 uni.country = country
                 uni.save()
         if "city" in data_keys and data["city"]:
-            city = City.objects.filter(
-                    country=uni.country,
-                    name=data["city"][0])
+            city = City.objects.filter(country=uni.country, name=data["city"][0])
             if city:
                 uni.city = city[0]
                 uni.save()
-        return Response(
-                self.serializer_class(uni).data,
-                status=response.status_code)
+        return Response(self.serializer_class(uni).data, status=response.status_code)
 
 
 class UniversityListCreateAPIView(ListCreateAPIView):
     queryset = University.objects.all()
     serializer_class = UniversitySerializer
     filter_backends = [filters.SearchFilter]
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
     search_fields = ["$department__course__name"]
 
     def post(self, request, *args, **kwargs):

@@ -2,8 +2,10 @@ from rest_framework.test import APITestCase
 from backend.models import University, Language, AppUser, Department, Course
 from cities_light.models import Country, City
 from rest_framework import status
+from rest_framework_simplejwt.tokens import RefreshToken
 from django.urls import reverse
 import json
+import uuid
 
 """DEfine tests for edusoft APIs"""
 
@@ -36,6 +38,9 @@ class TestUniversity(APITestCase):
             website="https://www.lasu.com",
         )
 
+        test_user = AppUser.objects.filter(email=cls.test_email)
+        if test_user:
+            test_user[0].delete()
         # create admin user
         cls.test_user = AppUser.objects.create_user(
             email=cls.test_email,
@@ -47,10 +52,19 @@ class TestUniversity(APITestCase):
         cls.test_user.is_staff = True
         cls.test_user.is_superuser = True
         cls.test_user.save()
+        admin_token = RefreshToken.for_user(cls.test_user)
+        cls.test_token = str(admin_token.access_token)
 
         # create  non-admin user
-        cls.app_user_email="idris01@yahoo.com"
-        cls.app_user_passwd="appUser1"
+        cls.app_user_email = "idris01@yahoo.com"
+        cls.app_user_passwd = "appUser1"
+
+        app_user = AppUser.objects.filter(email=cls.app_user_email)
+
+        # delete user if it already exist
+        if app_user:
+            app_user[0].delete()
+
         cls.app_user = AppUser.objects.create_user(
             email=cls.app_user_email,
             password=cls.app_user_passwd,
@@ -59,7 +73,8 @@ class TestUniversity(APITestCase):
             last_name="folohunso",
         )
 
-
+        user_token = RefreshToken.for_user(cls.app_user)
+        cls.app_token = str(user_token.access_token)
 
     def tearDown(self):
         for obj in self.obj_list:
@@ -108,6 +123,7 @@ class TestUniversity(APITestCase):
         """test POST method on /api/universities"""
 
         self.client.login(email=self.test_email, password=self.test_password)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.test_token}")
         initial_count = University.objects.count()
         data = self.university_data
         response = self.client.post(self.url, data)
@@ -189,8 +205,6 @@ class TestUniversity(APITestCase):
         if city_created:
             self.obj_list.append(city)
 
-        uni_count1 = University.objects.count()
-
         # Create the first University, with a department and a course
         uni1 = University.objects.create(
             name="Uni1",
@@ -200,75 +214,54 @@ class TestUniversity(APITestCase):
             postal_code="210212",
             city=city,
             website="www.uni1.edu.ng",
-            created_by=self.test_user
+            created_by=self.test_user,
         )
 
         new_data = dict(
-                name="Lagos State University",
-                history="Founded August 1990",
-                country='NG',
-                accomodation="On-campus accomodation available",
-                languages=['English','Yoruba'],
-                postal_code="210500",
-                city="Lagos",
-                website="https://www.unilag.edu.ng"
-                )
+            name=str(uuid.uuid4()).replace("-", "")[20],
+            history="Founded August 1990",
+            country="NG",
+            accomodation="On-campus accomodation available",
+            languages=["English", "Yoruba"],
+            postal_code="210500",
+            city="Lagos",
+            website="https://www.unilag.edu.ng",
+        )
 
         self.obj_list.append(uni1)
 
-        url = reverse(
-                "api:university_detail",
-                kwargs={"id":str(uni1.id)})
+        url = reverse("api:university_detail", kwargs={"id": str(uni1.id)})
 
         # request from anonymous user
         response = self.client.put(url, new_data)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-        self.client.login(
-                email=self.app_user_email,
-                password=self.app_user_passwd)
+        self.assertIn(
+            response.status_code, (status.HTTP_403_FORBIDDEN, status.HTTP_401_UNAUTHORIZED)
+        )
 
         # request from non admin user
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.app_token}")
         response = self.client.put(url, new_data)
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn(
+            response.status_code, (status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN)
+        )
 
         self.client.logout()
-        self.client.login(
-                email=self.test_email,
-                password=self.test_password)
 
         # request from admin user
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.test_token}")
         response = self.client.put(url, new_data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         data = json.loads(response.content.decode("utf-8"))
-        self.assertEqual(
-                str(uni1.id),
-                data.get("id"))
-        self.assertEqual(
-                data.get('name'),
-                new_data["name"])
-        self.assertEqual(
-                data.get('country_code'),
-                new_data['country'])
-        self.assertEqual(
-                data.get('city'),
-                new_data["city"])
-        self.assertEqual(
-                data.get('postal_code'),
-                new_data["postal_code"])
-        self.assertEqual(
-                data.get('website'),
-                new_data["website"])
-        self.assertEqual(
-                data.get('history'),
-                new_data["history"])
-        self.assertEqual(
-                sorted(data.get('languages')),
-                sorted(new_data["languages"]))
-        self.assertEqual(
-                data.get('accomodation'),
-                new_data["accomodation"])
+        self.assertEqual(str(uni1.id), data.get("id"))
+        self.assertEqual(data.get("name"), new_data["name"])
+        self.assertEqual(data.get("country_code"), new_data["country"])
+        self.assertEqual(data.get("city"), new_data["city"])
+        self.assertEqual(data.get("postal_code"), new_data["postal_code"])
+        self.assertEqual(data.get("website"), new_data["website"])
+        self.assertEqual(data.get("history"), new_data["history"])
+        self.assertEqual(sorted(data.get("languages")), sorted(new_data["languages"]))
+        self.assertEqual(data.get("accomodation"), new_data["accomodation"])
 
         # test the get endpoint with Anonymous user
         self.client.logout()
@@ -277,22 +270,22 @@ class TestUniversity(APITestCase):
 
         # test delete endpoint with Anonymous user
         result = self.client.delete(url)
-        self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn(
+            result.status_code, (status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN)
+        )
 
         # test delete endpoint with regular user
-        self.client.login(
-                email=self.app_user_email,
-                password=self.app_user_passwd)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.app_token}")
 
         result = self.client.delete(url)
-        self.assertEqual(result.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn(
+            result.status_code, (status.HTTP_401_UNAUTHORIZED, status.HTTP_403_FORBIDDEN)
+        )
 
         self.client.logout()
 
         # test delete endpoint with Admin user
-        self.client.login(
-                email=self.test_email,
-                password=self.test_password)
+        self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {self.test_token}")
 
         result = self.client.delete(url)
         self.assertEqual(result.status_code, status.HTTP_204_NO_CONTENT)

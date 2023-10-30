@@ -81,12 +81,12 @@ WSGI_APPLICATION = "edusoft.wsgi.application"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 if DEBUG:
     DATABASES = {
-            "default": {
-                "ENGINE": "django.db.backends.sqlite3",
-                "NAME": BASE_DIR / "db.sqlite3",
-                "TEST": {"NAME": BASE_DIR / "test_db.sqlite3"},
-                }
-            }
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+            "TEST": {"NAME": BASE_DIR / "test_db.sqlite3"},
+        }
+    }
 else:
     # setup production database
     DATABASES = {
@@ -164,7 +164,10 @@ CITIES_LIGHT_TRANSLATION_LANGUAGES = ["en"]
 # restframework settings
 if DEBUG:
     REST_FRAMEWORK = {
-            "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+        "DEFAULT_AUTHENTICATION_CLASSES": (
+            "rest_framework_simplejwt.authentication.JWTAuthentication",
+        ),
+        "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
         "PAGE_SIZE": 50,
     }
 else:
@@ -177,5 +180,10 @@ else:
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_SECURE = True
     CSRF_TRUSTED_ORIGINS = (
-            [] if not os.getenv('CSRF_TRUSTED_ORIGINS', None) else
-            os.getenv('CSRF_TRUSTED_ORIGINS').split(','))
+        []
+        if not os.getenv("CSRF_TRUSTED_ORIGINS", None)
+        else os.getenv("CSRF_TRUSTED_ORIGINS").split(",")
+    )
+
+
+MINIMUM_PASSWORD_SIZE = 9
