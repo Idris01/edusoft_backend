@@ -4,9 +4,64 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
 
 ## API documentation
 
+### `/api/users`
+
+- METHODS: `GET`, `POST`
+  - `GET`:
+    Only Admin user can get list of users
+    -  sample request
+    ```
+        curl -X GET <base-url>/api/users
+    ```
+    -  sample response
+    ```
+        {
+            "prev": null,
+            "next": null,
+            "count": 2,
+            "results": [
+                {
+                    "id": "12abd-qq45689-12",
+                    "username": "Idris",
+                    "first_name": "Adeyemi",
+                    "last_name": "Adebowale",
+                    "is_active": True,
+                    "email": "idrys01@gmail.com"
+                },
+                {
+                    "id": "32abd-qq45689-12",
+                    "username": "Idris",
+                    "first_name": "Adeyemi",
+                    "last_name": "Adebowale",
+                    "is_active": True,
+                    "email": "idrys01@gmail.com"
+                }
+            ]
+        }
+    ```
+  - `POST`: create new user accoun
+    - sample request
+    ```
+        curl -X POST <BASE-URL>/api/users -H "Content-Type=application/json" \
+            -d '{ "username":"idris",
+                  "first_name": "ade",
+                  "last_name": "yemi",
+                  "password": "@passWord1",
+                  "confirm_password": "@passWord1",
+                  "email":"idrys01@gmail.com",
+                }'
+    ```
+    - sample response:
+    ```
+        {
+            "message": "registration successfull",
+            "token": "<activation_token>"
+        }
+    ``` 
+
 ### `/api/universites`
 - Methods: `GET`, `POST`
-- Description: Get the list of all universities
+- Descrip   tion: Get the list of all universities
 - URL Queries:
   - limit: number of items return e.g
   - search: search universities based on course e.g `/api/universities/?search=software` return a list of universities that offers courses containing software
