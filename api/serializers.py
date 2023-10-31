@@ -55,15 +55,16 @@ class UserSerializer(serializers.ModelSerializer):
         model = AppUser
         fields = [
                 "id", "username", "first_name",
-                "last_name", "email"]
+                "last_name", "email", "is_active"]
 
-class EdusoftTokenObtainPairSerializer(TokenObtainPairSerializer):
+class EdusoftObtainTokenPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-
+        
         # Add custom claims
-        token['username'] = user.username
+        token['name'] = user.username
         token['email'] = user.email
 
-        return token 
+        return token
+

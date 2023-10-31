@@ -60,6 +60,12 @@ class AppUser(AbstractUser):
     UNIQUE_TOGETHER = ("email", "username")
     REQUIRED_FIELDS = ("password", "username", "first_name", "last_name")
 
+class ActivationToken(models.Model):
+    user = models.ForeignKey(AppUser, on_delete=models.CASCADE, editable=False)
+    token = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    def __str__(self):
+        return str(token)
 
 class Consultation(BaseModel):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)

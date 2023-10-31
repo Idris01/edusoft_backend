@@ -64,7 +64,7 @@ class AppUserTest(APITestCase):
 
     def test_login_user(self):
         """Test userlogin with token"""
-        login_url = reverse("api:user_login")
+        login_url = reverse("api:token_obtain_pair")
         email = "testlogin@gmail.com"
         password = "@Iwill9evergiveUp"
         username="loginTester"
@@ -83,6 +83,9 @@ class AppUserTest(APITestCase):
                 self.registration_url,
                 data=data)
 
+        reg_response = json.loads(
+                response.content.decode("utf-8"))
+
         reg_user = AppUser.objects.filter(email=email)
         
         if reg_user:
@@ -93,6 +96,33 @@ class AppUserTest(APITestCase):
         self.assertEqual(
                 response.status_code,
                 status.HTTP_201_CREATED)
+        # login the user, this should fail prior to user verification
+
+        response_auth = self.client.post(
+                login_url,
+                data=dict(
+                    email=email,
+                    password=password))
+
+        content_auth = json.loads(
+                response_auth.content.decode('utf-8'))
+        
+        self.assertEqual(
+                response_auth.status_code,
+                status.HTTP_401_UNAUTHORIZED)
+
+        self.assertIn(
+                "no active account",
+                content_auth.get("detail").lower())
+
+        # verify account to activate user
+        verify_url = reverse(
+                "api:verify_account",
+                kwargs=dict(token=reg_response.get("token")))
+        verify_response = self.client.get(verify_url)
+        self.assertEqual(
+                verify_response.status_code,
+                status.HTTP_200_OK)
 
         # login the user, this should return some token
         response = self.client.post(
@@ -105,16 +135,28 @@ class AppUserTest(APITestCase):
                 status.HTTP_200_OK)
         content = json.loads(
                 response.content.decode('utf-8'))
-        
+
         self.assertEqual(email, content.get('email'))
         self.assertEqual(username, content.get('username'))
         self.assertIn("access", content)
         self.assertIn("refresh", content)
-        self.assertIn("refresh_expires_at", content)
-        self.assertIn("access_expires_at", content)
+        self.assertIn("refresh_expires_seconds", content)
+        self.assertIn("access_expires_seconds", content)
         self.assertGreater(
-                content.get("refresh_expires_at"),
-                content.get("access_expires_at"))
+                content.get("refresh_expires_seconds"),
+                content.get("access_expires_seconds"))
+
+        token_refresh_url = reverse("api:token_refresh")
+        refresh_response = self.client.post(
+                token_refresh_url,
+                data=dict(refresh=content.get("refresh")))
+        refresh_data = json.loads(
+                refresh_response.content.decode("utf-8"))
+        
+        self.assertIn("access", refresh_data) # confirm new access token
+        self.assertNotEqual(
+                refresh_data.get("access"),
+                content.get("access"))      # confirm new token differs from old
 
 
     def test_create_user(self):
@@ -216,7 +258,7 @@ class AppUserTest(APITestCase):
         self.assertEqual(
                 user_count + 1,
                 AppUser.objects.count())
-
+        
     def test_create_user_missing_requirements(self):
         """Test new user created successfully"""
         email = "teste1@gmail.com"

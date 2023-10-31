@@ -1,11 +1,12 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from backend.models import University, Language, AppUser
+from backend.models import University, Language, AppUser, ActivationToken
 from cities_light.models import Country, City
 from .serializers import (
         UniversitySerializer, 
         UserSerializer,
-        EdusoftTokenObtainPairSerializer)
+        EdusoftObtainTokenPairSerializer)
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework import status, filters
 from django.contrib.auth.models import AnonymousUser
 from .permissions import IsAdminOrReadOnly, IsAdminReadOnly
@@ -14,19 +15,37 @@ import re
 from rest_framework_simplejwt.views import TokenObtainPairView
 import json
 
+
+class VerifyAccountAPIView(APIView):
+    def get(self, request, *args, **kwargs):
+
+        activation_token = ActivationToken.objects.filter(token=self.kwargs.get("token"))
+        if not activation_token:
+            return Response(
+                    {"detail":"Invalid Token"},
+                    status=status.HTTP_400_BAD_REQUEST)
+        activated_user = activation_token[0].user
+        activated_user.is_active = True
+        activated_user.save()
+        activation_token.delete()
+        return Response(
+                {"detail":"Account successfully activated"},
+                status=status.HTTP_200_OK)
+
 class EdusoftTokenObtainPairView(TokenObtainPairView):
-    serializer_class = EdusoftTokenObtainPairSerializer
+    serializer_class = EdusoftObtainTokenPairSerializer
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         if response.status_code == 200:
-            user = AppUser.objects.get(email=request.data.get("email"))
-            response.data['username'] = user.username
-            response.data['email'] = user.email
-            refresh_expires_at = self.token_refresh_sliding_lifetime
-            access_expires_at = self.token_access_sliding_lifetime
-            response.data["refresh_expires_at"] = refresh_expires_at
-            response.data["access_expires_at"] = access_expires_at
+           user = AppUser.objects.get(email=request.data.get("email"))
+           response.data['username'] = user.username
+           response.data['email'] = user.email
+           ref_sec = settings.SIMPLE_JWT.get('REFRESH_TOKEN_LIFETIME').total_seconds()
+           acc_sec = settings.SIMPLE_JWT.get('ACCESS_TOKEN_LIFETIME').total_seconds()
+           response.data["refresh_expires_seconds"] = ref_sec
+           response.data["access_expires_seconds"] = acc_sec
         return response
+
 
 class UserListCreateAPIView(ListCreateAPIView):
     serializer_class = UserSerializer
@@ -94,11 +113,15 @@ class UserListCreateAPIView(ListCreateAPIView):
                 data=user_data)
         
         del user_data["confirm_password"] # remove confirmation data
+        user_data["is_active"] = False
         if serialized_data.is_valid():
-            AppUser.objects.create_user(
+            new_user = AppUser.objects.create_user(
                     **user_data)
+            act_token = ActivationToken.objects.create(user=new_user)
             return Response(
-                    dict(message="registration successfull"),
+                    dict(
+                    message="registration successfull",
+                    token=str(act_token.token)),
                     status=status.HTTP_201_CREATED)
 
         return Response(
