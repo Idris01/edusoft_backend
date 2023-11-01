@@ -9,9 +9,9 @@ import json
 class AppUserTest(APITestCase):
     @classmethod
     def setUpClass(cls):
+        cls.login_url = reverse("api:token_obtain_pair")
+        cls.passwd_reset_url = reverse("api:password_reset")
         cls.registration_url = reverse("api:user_list_create")
-        cls.url_name = "api:university_list_create"
-        cls.url = reverse(cls.url_name)
         cls.test_password = "mypassword@1"
         cls.test_email = "idris01@gmail.com"
         cls.test_username = "adeyemi"
@@ -62,9 +62,80 @@ class AppUserTest(APITestCase):
         for obj in self.obj_list:
             obj.delete()
 
+    def test_password_reset(self):
+        """test password reset by user"""
+        old_passwd = "@9evergiveUp1"
+        new_passwd = "#9evergiveUp2"
+        email = "resetIt@gmail.com"
+
+        user = AppUser.objects.create_user(
+                username="yemi",
+                email=email,
+                password=old_passwd,
+                first_name="myfirstname",
+                last_name="mylastname")
+        user.is_active = True;
+        user.save()
+        self.obj_list.append(user) # delete user at cleanup
+        response = self.client.post(
+              self.login_url,
+              data=dict(
+                  email=email,
+                  password=old_passwd)
+              )
+
+        # assert that user is able to login
+        self.assertEqual(
+                response.status_code,
+                status.HTTP_200_OK)
+
+        self.client.logout()  # clear old credentials
+        
+        # send a post request for new passord
+        response = self.client.get(
+                self.passwd_reset_url + f"?email={email}")
+        reset_data = json.loads(
+                response.content.decode("utf-8"))
+
+        self.assertEqual(
+                response.status_code,
+                status.HTTP_200_OK)
+        
+        # check that "reset_token" is present ,this is restricted to the frontend
+        self.assertIn(
+                "reset_token",
+                reset_data)
+
+        verify_url = reverse(
+                "api:verify_account",
+                kwargs=dict(token=reset_data.get("reset_token")))
+
+        # supply new password
+        response = self.client.post(
+                verify_url,
+                data=dict(
+                    password=new_passwd,
+                    confirm_password=new_passwd))
+        self.assertEqual(
+                response.status_code,
+                status.HTTP_200_OK)
+
+        # login with new password
+        response = self.client.post(
+              self.login_url,
+              data=dict(
+                  email=email,
+                  password=new_passwd))
+        
+        # verify login with new password
+        self.assertEqual(
+                response.status_code,
+                status.HTTP_200_OK)
+
+
+
     def test_login_user(self):
         """Test userlogin with token"""
-        login_url = reverse("api:token_obtain_pair")
         email = "testlogin@gmail.com"
         password = "@Iwill9evergiveUp"
         username="loginTester"
@@ -89,7 +160,7 @@ class AppUserTest(APITestCase):
         reg_user = AppUser.objects.filter(email=email)
         
         if reg_user:
-            # add user to objects to be deleted during cleanuo
+            # add user to objects to be deleted during cleanup
             self.obj_list.append(reg_user[0])
 
         # assert that the user was successfully created
@@ -99,7 +170,7 @@ class AppUserTest(APITestCase):
         # login the user, this should fail prior to user verification
 
         response_auth = self.client.post(
-                login_url,
+                self.login_url,
                 data=dict(
                     email=email,
                     password=password))
@@ -126,7 +197,7 @@ class AppUserTest(APITestCase):
 
         # login the user, this should return some token
         response = self.client.post(
-                login_url,
+                self.login_url,
                 data=dict(
                     email=email,
                     password=password))

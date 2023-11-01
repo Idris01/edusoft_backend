@@ -19,6 +19,15 @@ CONS_CHOICES = (
     ("Fullfilled", FULFILLED),
 )
 
+
+# token type
+RESET = "reset"
+ACTIVATE = "activate"
+
+TOKEN_CHOICES = (
+    ("reset", RESET),
+    ("activate", ACTIVATE),
+)
 # payment status
 PENDING = "pending"
 SUCCESS = "success"
@@ -63,6 +72,7 @@ class AppUser(AbstractUser):
 class ActivationToken(models.Model):
     user = models.ForeignKey(AppUser, on_delete=models.CASCADE, editable=False)
     token = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    category = models.CharField(max_length=10, choices=TOKEN_CHOICES, default=ACTIVATE)
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return str(token)

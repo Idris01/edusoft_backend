@@ -5,15 +5,45 @@ from .serializers import (
         UniversitySerializer, 
         UserSerializer,
         EdusoftObtainTokenPairSerializer)
+from .validators import validate_password
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status, filters
 from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.hashers import make_password
 from .permissions import IsAdminOrReadOnly, IsAdminReadOnly
 from django.conf import settings
 import re
 from rest_framework_simplejwt.views import TokenObtainPairView
 import json
+
+class PasswordResetAPIView(APIView):
+    """Handle user password reset"""
+    def get(self, request, *args, **kwargs):
+        email = request.query_params.get("email")
+        if not email:
+            return Response(
+                    {"detail": "email required"},
+                    status=status.HTTP_400_BAD_REQUEST)
+        user = AppUser.objects.filter(email=email)
+
+        if not user:
+            return Response(
+                    {"detail": "account not found"},
+                    status=status.HTTP_400_BAD_REQUEST)
+        user = user[0]
+
+        if not user.is_active:
+            return Response(
+                    {"detail": "please validate account"},
+                    status=status.HTTP_400_BAD_REQUEST)
+        # create a reset token
+        reset_token = ActivationToken.objects.create(
+               user=user,
+               category="reset")
+        return Response(
+               dict(reset_token=str(reset_token.token)),
+               status = status.HTTP_200_OK)
 
 
 class VerifyAccountAPIView(APIView):
@@ -30,6 +60,29 @@ class VerifyAccountAPIView(APIView):
         activation_token.delete()
         return Response(
                 {"detail":"Account successfully activated"},
+                status=status.HTTP_200_OK)
+    def post(self, request, *args, **kwargs):
+        reset_token = ActivationToken.objects.filter(token=self.kwargs.get("token"))
+        if not reset_token:
+            return Response(
+                    {"detail": "invalid link"},
+                    status=status.HTTP_400_BAD_REQUEST)
+
+        password = request.data.get("password")
+        confirm_password = request.data.get("confirm_password")
+        has_error = validate_password(password, confirm_password)
+
+        if has_error:
+            info, stat = has_error
+            return Response(info, stat)
+        new_passwd = make_password(password)
+        user = reset_token[0].user
+        user.password = new_passwd
+        user.save()
+        reset_token[0].delete()
+
+        return Response(
+                {"detail": "password reset successfull"},
                 status=status.HTTP_200_OK)
 
 class EdusoftTokenObtainPairView(TokenObtainPairView):
@@ -72,45 +125,12 @@ class UserListCreateAPIView(ListCreateAPIView):
         
         password = user_data.get("password")
         confirm_password = user_data.get("confirm_password")
-        if password and confirm_password:
-            if password != confirm_password:
-                return Response(
-                    dict(password=["password mismatch"]),
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+        has_error = validate_password(password, confirm_password)
+        if has_error:
+            info, stat = has_error
+            return Response(info, stat)
 
-            elif len(password) < settings.MINIMUM_PASSWORD_SIZE:
-                return Response(
-                    dict(password=["password too short"]),
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            elif re.search(r"[\s]+", password):
-                return Response(
-                    dict(password=["password must not include space"]),
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            elif not all(
-                (
-                    re.search("[a-z]+", password),
-                    re.search("[A-Z]+", password),
-                    re.search("[^a-zA-z0-9]+", password),
-                    re.search("[0-9]+", password),
-                )
-            ):
-                return Response(
-                    dict(
-                        password=[
-                            " ".join(
-                                (
-                                    "password must have lower",
-                                    "and uppercase, number and special char",
-                                )
-                            )
-                        ]
-                    ),
-                    status=status.HTTP_400_BAD_REQUEST)
-        serialized_data = self.serializer_class(
-                data=user_data)
+        serialized_data = self.serializer_class(data=user_data)
         
         del user_data["confirm_password"] # remove confirmation data
         user_data["is_active"] = False

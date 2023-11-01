@@ -4,7 +4,8 @@ from .views import (
         UniversityDetailAPIView,
         UserListCreateAPIView,
         EdusoftTokenObtainPairView,
-        VerifyAccountAPIView)
+        VerifyAccountAPIView,
+        PasswordResetAPIView)
 from rest_framework_simplejwt.views import TokenRefreshView
 
 
@@ -35,4 +36,9 @@ urlpatterns = [
         "account/<slug:token>/verify/",
         VerifyAccountAPIView.as_view(),
         name="verify_account"),
+    path(
+        "accounts/password_reset/",
+        PasswordResetAPIView.as_view(),
+        name="password_reset"),
+
 ]
