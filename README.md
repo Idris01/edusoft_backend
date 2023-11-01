@@ -11,7 +11,7 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
     Only Admin user can get list of users
     -  sample request
     ```
-        curl -X GET <base-url>/api/users
+        curl -X GET <BASE_URL>/api/users
     ```
     -  sample response
     ```
@@ -22,7 +22,7 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
             "results": [
                 {
                     "id": "12abd-qq45689-12",
-                    "username": "Idris",
+                    "username": "Idris1",
                     "first_name": "Adeyemi",
                     "last_name": "Adebowale",
                     "is_active": True,
@@ -30,11 +30,11 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
                 },
                 {
                     "id": "32abd-qq45689-12",
-                    "username": "Idris",
+                    "username": "Idris2",
                     "first_name": "Adeyemi",
                     "last_name": "Adebowale",
                     "is_active": True,
-                    "email": "idrys01@gmail.com"
+                    "email": "idrys02@yahoo.com"
                 }
             ]
         }
@@ -42,7 +42,7 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
   - `POST`: create new user accoun
     - sample request
     ```
-        curl -X POST <BASE-URL>/api/users -H "Content-Type=application/json" \
+        curl -X POST <BASE_URL>/api/users -H "Content-Type=application/json" \
             -d '{ "username":"idris",
                   "first_name": "ade",
                   "last_name": "yemi",
@@ -59,9 +59,55 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
         }
     ``` 
 
+### `/api/account/<token>/verify`
+- Methods: `GET`
+- Description: Verify a new user account to enable login access
+
+  - Sample request
+  ```
+  curl -X GET <BASE_URL>/api/account/<token>/verify
+  ```
+  - Sample Response
+  ```
+  {
+    "message": "Account Verified"
+  }
+  ```
+### `/api/token`
+- Methods: `POST`
+- Description: login registered user to obtain token pair i.e access and refresh token
+
+  - Sample Request:
+  ```
+  curl -X POST <BASE_URL>/api/token -H "Content-Type=application/json" -d \
+    '{
+       "email": "idrys01@gmail.com",
+       "password": "@myPassword1"
+     }'
+  ```
+
+  - Sample Response
+  ```
+  {
+    "username":"idrys01",
+    "email": "idrys01@gmail.com",
+    "access": <access_token>,
+    "refresh": <refresh_token>,
+    "access_expiry_seconds": 300,  # short lived 5min
+    "refresh_expiry_seconds": 86400, # long lived 1hr
+   }
+   ```
+
+   - Access token Usage
+   After obtaining the token key pair, the access token is always attached to subsequent request as follows
+
+   ```
+   curl <BASE_URL>/api/users/<id>/profile -H "Content-Type=application/json, Authorization=Bearer <access_token>"
+   ```
+
 ### `/api/universites`
 - Methods: `GET`, `POST`
-- Descrip   tion: Get the list of all universities
+- Description: Get the list of all universities
 - URL Queries:
   - limit: number of items return e.g
   - search: search universities based on course e.g `/api/universities/?search=software` return a list of universities that offers courses containing software
