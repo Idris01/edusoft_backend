@@ -121,7 +121,6 @@ class TestUserProfile(APITestCase):
                 data=profile_data)
         data = json.loads(
                 response.content.decode("utf-8"))
-        print(data)
 
         self.assertEqual(
                 response.status_code,

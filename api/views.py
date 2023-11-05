@@ -42,15 +42,25 @@ class UserProfileAPIView(APIView):
         for field in self.profile_fields:
             old = profile_old.get(field)
             new = new_data.get(field)
-            print(field, old, new)
             if (old == None) and (new == None):
                 error_data[field] = "Field is required"
         if error_data:
             return Response(
                     error_data,
                     status=status.HTTP_400_BAD_REQUEST)
+        # if "nationality" in new_data:
+        #    nationality = Country.objects.filter(
+        #            code2__iexact=new_data["nationality"])
+        #    if nationality:
+        #        new_data["nationality"] = nationality[0]
+        #    else:
+        #        return Response(
+        #                dict(
+        #                    nationality="please supply valid country code2"),
+        #                status=status.HTTP_400_BAD_REQUEST)
+        
         serialized_data = ProfileSerializer(
-                profile, data=request.data)
+                profile, data=new_data)
         if serialized_data.is_valid():
             serialized_data.save(update=True)
             return Response(

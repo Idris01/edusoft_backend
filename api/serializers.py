@@ -2,7 +2,7 @@ from rest_framework import serializers
 from backend.models import University, AppUser, Profile
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
-
+import cities_light
 
 
 class UniversitySerializer(serializers.ModelSerializer):
@@ -69,6 +69,9 @@ class EdusoftObtainTokenPairSerializer(TokenObtainPairSerializer):
         return token
 
 class ProfileSerializer(serializers.ModelSerializer):
+    nationality = serializers.SlugRelatedField(
+            slug_field="code2",
+            queryset=cities_light.models.Country.objects.all())
     class Meta:
         model = Profile
         fields = "__all__"
