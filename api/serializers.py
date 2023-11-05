@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from backend.models import University, AppUser
+from backend.models import University, AppUser, Profile
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
@@ -68,3 +68,7 @@ class EdusoftObtainTokenPairSerializer(TokenObtainPairSerializer):
 
         return token
 
+class ProfileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = "__all__"

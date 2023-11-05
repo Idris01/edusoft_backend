@@ -1,13 +1,16 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from backend.models import University, Language, AppUser, ActivationToken
+from backend.models import (
+        University, Language, Profile,
+        AppUser, ActivationToken)
 from cities_light.models import Country, City
 from .serializers import (
         UniversitySerializer, 
-        UserSerializer,
+        UserSerializer, ProfileSerializer,
         EdusoftObtainTokenPairSerializer)
 from .validators import validate_password
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status, filters
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.hashers import make_password
@@ -16,6 +19,46 @@ from django.conf import settings
 import re
 from rest_framework_simplejwt.views import TokenObtainPairView
 import json
+
+
+class UserProfileAPIView(APIView):
+    queryset = Profile.objects.all()
+    permission_classes = [IsAuthenticated]
+    profile_fields = [
+            "date_of_birth", "gender", "address",
+            "nationality"]
+
+    def get(self, request, *args, **kwargs):
+        profile, is_new = Profile.objects.get_or_create(user=request.user)
+        serialized_profile = ProfileSerializer(profile)
+        return Response(serialized_profile.data, status=status.HTTP_200_OK)
+
+    def put(self, request, *args, **kwargs):
+        profile, is_new = Profile.objects.get_or_create(user=request.user)
+        new_data = {key:value[0] for key,value in dict(request.data).items()}
+        error_data = {}
+        profile_old = profile.__dict__
+        
+        for field in self.profile_fields:
+            old = profile_old.get(field)
+            new = new_data.get(field)
+            print(field, old, new)
+            if (old == None) and (new == None):
+                error_data[field] = "Field is required"
+        if error_data:
+            return Response(
+                    error_data,
+                    status=status.HTTP_400_BAD_REQUEST)
+        serialized_data = ProfileSerializer(
+                profile, data=request.data)
+        if serialized_data.is_valid():
+            serialized_data.save(update=True)
+            return Response(
+                    serialized_data.data,
+                    status=status.HTTP_200_OK)
+        return Response(
+                serialized_data.errors,
+                status=status.HTTP_400_BAD_REQUEST)
 
 class PasswordResetAPIView(APIView):
     """Handle user password reset"""

@@ -139,6 +139,20 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
 }
 ```
 
+### `/api/user/profile`
+- Methods: GET, POST
+
+- GET
+  - Description: Get the profile details of a given logged in user
+  - Sample Request:
+  ```
+  curl -X GET <base_url>/api/user/profile -H \
+  "Content-Type=applicatio/json;\
+  Authorization= Bearer <access_token>"
+  ```
+
+  - Sample Response:
+
 ### `/api/universities/<slug:id>`
 - Methods: `GET`, `PUT`, `DELETE`
 - Description: 
