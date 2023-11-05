@@ -48,16 +48,6 @@ class UserProfileAPIView(APIView):
             return Response(
                     error_data,
                     status=status.HTTP_400_BAD_REQUEST)
-        # if "nationality" in new_data:
-        #    nationality = Country.objects.filter(
-        #            code2__iexact=new_data["nationality"])
-        #    if nationality:
-        #        new_data["nationality"] = nationality[0]
-        #    else:
-        #        return Response(
-        #                dict(
-        #                    nationality="please supply valid country code2"),
-        #                status=status.HTTP_400_BAD_REQUEST)
         
         serialized_data = ProfileSerializer(
                 profile, data=new_data)
