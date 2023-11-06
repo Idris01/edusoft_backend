@@ -27,7 +27,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 class CourseListAPIView(ListAPIView):
     serializer_class = CourseListSerializer
     queryset = Course.objects.all()
-
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["$name"]
 
 class UserProfileAPIView(APIView):
     queryset = Profile.objects.all()

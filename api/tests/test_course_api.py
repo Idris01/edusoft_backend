@@ -68,10 +68,6 @@ class TestCourse(APITestCase):
         arabic, _ = Language.objects.get_or_create(name="Arabic")
         cls.obj_list.extend([english, yoruba, hausa, arabic])
 
-        # delete old universities
-        for univ in University.objects.all():
-            univ.delete()
-
         # define test universities
         uniosun = University.objects.create(
             name="osun state university",
@@ -147,6 +143,11 @@ class TestCourse(APITestCase):
             [osun_animal, osun_crop, london_nursing, london_medical, london_medicine]
         )
 
+        # delete old degrees
+        old_degrees = Degree.objects.all()
+        for deg in old_degrees:
+            deg.delete()
+
         # define the degrees for uniosun
         undergrad_crop = Degree.objects.create(
             name="Undergraduate",
@@ -200,3 +201,14 @@ class TestCourse(APITestCase):
         self.assertIn("university_id", course)
         self.assertIn("department", course)
         self.assertIn("department_id", course)
+
+    def test_course_search_on_course_name(self):
+        """test search for given course name"""
+        search_url = "{}?search={}".format(
+                self.course_url, "nursing")
+
+        response = self.client.get(search_url)
+        search_data = json.loads(response.content.decode("utf-8"))
+
+        # only one course has Nursing contained in its name
+        self.assertEqual(search_data.get("count"),1)
