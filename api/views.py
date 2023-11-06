@@ -1,12 +1,17 @@
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
-from backend.models import (
-        University, Language, Profile,
-        AppUser, ActivationToken)
+from rest_framework.generics import (
+    ListAPIView,
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView,
+)
+from backend.models import University, Language, Profile, AppUser, ActivationToken, Course
 from cities_light.models import Country, City
 from .serializers import (
-        UniversitySerializer, 
-        UserSerializer, ProfileSerializer,
-        EdusoftObtainTokenPairSerializer)
+    UniversitySerializer,
+    CourseListSerializer,
+    UserSerializer,
+    ProfileSerializer,
+    EdusoftObtainTokenPairSerializer,
+)
 from .validators import validate_password
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -16,17 +21,18 @@ from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth.hashers import make_password
 from .permissions import IsAdminOrReadOnly, IsAdminReadOnly
 from django.conf import settings
-import re
 from rest_framework_simplejwt.views import TokenObtainPairView
-import json
+
+
+class CourseListAPIView(ListAPIView):
+    serializer_class = CourseListSerializer
+    queryset = Course.objects.all()
 
 
 class UserProfileAPIView(APIView):
     queryset = Profile.objects.all()
     permission_classes = [IsAuthenticated]
-    profile_fields = [
-            "date_of_birth", "gender", "address",
-            "nationality"]
+    profile_fields = ["date_of_birth", "gender", "address", "nationality"]
 
     def get(self, request, *args, **kwargs):
         profile, is_new = Profile.objects.get_or_create(user=request.user)
@@ -35,58 +41,51 @@ class UserProfileAPIView(APIView):
 
     def put(self, request, *args, **kwargs):
         profile, is_new = Profile.objects.get_or_create(user=request.user)
-        new_data = {key:value[0] for key,value in dict(request.data).items()}
+        new_data = {key: value[0] for key, value in dict(request.data).items()}
         error_data = {}
         profile_old = profile.__dict__
-        
+
         for field in self.profile_fields:
             old = profile_old.get(field)
             new = new_data.get(field)
-            if (old == None) and (new == None):
+            if (old is None) and (new is None):
                 error_data[field] = "Field is required"
         if error_data:
-            return Response(
-                    error_data,
-                    status=status.HTTP_400_BAD_REQUEST)
-        
-        serialized_data = ProfileSerializer(
-                profile, data=new_data)
+            return Response(error_data, status=status.HTTP_400_BAD_REQUEST)
+
+        serialized_data = ProfileSerializer(profile, data=new_data)
         if serialized_data.is_valid():
             serialized_data.save(update=True)
-            return Response(
-                    serialized_data.data,
-                    status=status.HTTP_200_OK)
-        return Response(
-                serialized_data.errors,
-                status=status.HTTP_400_BAD_REQUEST)
+            return Response(serialized_data.data, status=status.HTTP_200_OK)
+        return Response(serialized_data.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class PasswordResetAPIView(APIView):
     """Handle user password reset"""
+
     def get(self, request, *args, **kwargs):
         email = request.query_params.get("email")
         if not email:
             return Response(
-                    {"detail": "email required"},
-                    status=status.HTTP_400_BAD_REQUEST)
+                {"detail": "email required"}, status=status.HTTP_400_BAD_REQUEST
+            )
         user = AppUser.objects.filter(email=email)
 
         if not user:
             return Response(
-                    {"detail": "account not found"},
-                    status=status.HTTP_400_BAD_REQUEST)
+                {"detail": "account not found"}, status=status.HTTP_400_BAD_REQUEST
+            )
         user = user[0]
 
         if not user.is_active:
             return Response(
-                    {"detail": "please validate account"},
-                    status=status.HTTP_400_BAD_REQUEST)
+                {"detail": "please validate account"}, status=status.HTTP_400_BAD_REQUEST
+            )
         # create a reset token
-        reset_token = ActivationToken.objects.create(
-               user=user,
-               category="reset")
+        reset_token = ActivationToken.objects.create(user=user, category="reset")
         return Response(
-               dict(reset_token=str(reset_token.token)),
-               status = status.HTTP_200_OK)
+            dict(reset_token=str(reset_token.token)), status=status.HTTP_200_OK
+        )
 
 
 class VerifyAccountAPIView(APIView):
@@ -95,21 +94,20 @@ class VerifyAccountAPIView(APIView):
         activation_token = ActivationToken.objects.filter(token=self.kwargs.get("token"))
         if not activation_token:
             return Response(
-                    {"detail":"Invalid Token"},
-                    status=status.HTTP_400_BAD_REQUEST)
+                {"detail": "Invalid Token"}, status=status.HTTP_400_BAD_REQUEST
+            )
         activated_user = activation_token[0].user
         activated_user.is_active = True
         activated_user.save()
         activation_token.delete()
         return Response(
-                {"detail":"Account successfully activated"},
-                status=status.HTTP_200_OK)
+            {"detail": "Account successfully activated"}, status=status.HTTP_200_OK
+        )
+
     def post(self, request, *args, **kwargs):
         reset_token = ActivationToken.objects.filter(token=self.kwargs.get("token"))
         if not reset_token:
-            return Response(
-                    {"detail": "invalid link"},
-                    status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "invalid link"}, status=status.HTTP_400_BAD_REQUEST)
 
         password = request.data.get("password")
         confirm_password = request.data.get("confirm_password")
@@ -125,21 +123,23 @@ class VerifyAccountAPIView(APIView):
         reset_token[0].delete()
 
         return Response(
-                {"detail": "password reset successfull"},
-                status=status.HTTP_200_OK)
+            {"detail": "password reset successfull"}, status=status.HTTP_200_OK
+        )
+
 
 class EdusoftTokenObtainPairView(TokenObtainPairView):
     serializer_class = EdusoftObtainTokenPairSerializer
+
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         if response.status_code == 200:
-           user = AppUser.objects.get(email=request.data.get("email"))
-           response.data['username'] = user.username
-           response.data['email'] = user.email
-           ref_sec = settings.SIMPLE_JWT.get('REFRESH_TOKEN_LIFETIME').total_seconds()
-           acc_sec = settings.SIMPLE_JWT.get('ACCESS_TOKEN_LIFETIME').total_seconds()
-           response.data["refresh_expires_seconds"] = ref_sec
-           response.data["access_expires_seconds"] = acc_sec
+            user = AppUser.objects.get(email=request.data.get("email"))
+            response.data["username"] = user.username
+            response.data["email"] = user.email
+            ref_sec = settings.SIMPLE_JWT.get("REFRESH_TOKEN_LIFETIME").total_seconds()
+            acc_sec = settings.SIMPLE_JWT.get("ACCESS_TOKEN_LIFETIME").total_seconds()
+            response.data["refresh_expires_seconds"] = ref_sec
+            response.data["access_expires_seconds"] = acc_sec
         return response
 
 
@@ -148,24 +148,25 @@ class UserListCreateAPIView(ListCreateAPIView):
     queryset = AppUser.objects.all()
     permission_classes = [IsAdminReadOnly]
     required_fields = [
-            "username", "password","first_name",
-            "confirm_password", "email", "last_name"]
+        "username",
+        "password",
+        "first_name",
+        "confirm_password",
+        "email",
+        "last_name",
+    ]
 
     def post(self, request, *args, **kwargs):
 
         data = dict(request.data)
-        user_data = {
-                item:data.get(item,[None])[0]  for item in self.required_fields}
-
-        first_name = user_data.get("first_name")
-        last_name = user_data.get("last_name")
+        user_data = {item: data.get(item, [None])[0] for item in self.required_fields}
 
         for key, value in user_data.items():
             if not value:
                 return Response(
-                        {key : ["This field is reqired"]},
-                        status=status.HTTP_400_BAD_REQUEST)
-        
+                    {key: ["This field is reqired"]}, status=status.HTTP_400_BAD_REQUEST
+                )
+
         password = user_data.get("password")
         confirm_password = user_data.get("confirm_password")
         has_error = validate_password(password, confirm_password)
@@ -174,22 +175,18 @@ class UserListCreateAPIView(ListCreateAPIView):
             return Response(info, stat)
 
         serialized_data = self.serializer_class(data=user_data)
-        
-        del user_data["confirm_password"] # remove confirmation data
+
+        del user_data["confirm_password"]  # remove confirmation data
         user_data["is_active"] = False
         if serialized_data.is_valid():
-            new_user = AppUser.objects.create_user(
-                    **user_data)
+            new_user = AppUser.objects.create_user(**user_data)
             act_token = ActivationToken.objects.create(user=new_user)
             return Response(
-                    dict(
-                    message="registration successfull",
-                    token=str(act_token.token)),
-                    status=status.HTTP_201_CREATED)
+                dict(message="registration successfull", token=str(act_token.token)),
+                status=status.HTTP_201_CREATED,
+            )
 
-        return Response(
-                serialized_data.errors,
-                status=status.HTTP_400_BAD_REQUEST)
+        return Response(serialized_data.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UniversityDetailAPIView(RetrieveUpdateDestroyAPIView):

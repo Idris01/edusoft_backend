@@ -57,7 +57,7 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
             "message": "registration successfull",
             "token": "<activation_token>"
         }
-    ``` 
+    ```
 
 ### `/api/account/<token>/verify`
 - Methods: `GET`
@@ -146,16 +146,16 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
   - Description: Get the profile details of a given logged in user
   - Sample Request:
   ```
-  curl -X GET <base_url>/api/user/profile -H \
-  "Content-Type=applicatio/json;\
-  Authorization= Bearer <access_token>"
+  curl -X GET <baseurl>/api/user/profile \
+	-H "Content-Type: applicatio/json \
+   	-H "Authorization: Bearer <access-token>"
   ```
 
   - Sample Response:
 
 ### `/api/universities/<slug:id>`
 - Methods: `GET`, `PUT`, `DELETE`
-- Description: 
+- Description:
    - *GET* Request:
    Get the detail of a University of `id`
 
@@ -172,6 +172,29 @@ curl -X GET <base_url>/universities/f8497301-0e9f-403f-9b84-6fa38c18d336
 
    - *DELETE* Request:
    Delete the University described by `id`
+
+### `/api/user/profile`
+- Methods:
+  - GET (Authentication required)
+     - Descritpion: Get the profile of a given logged-in user
+     - Sample Request:
+	```
+	curl -X GET <base-url>/api/user/profile \
+		-H "Content-Type: application/json" \
+		-H "Authorization: Bearer {access_token}"
+	```
+     - Sample Response:
+	```
+	{
+		"nationality": "Nigerian",
+		"date_of_birth": "1990-08-20",
+		"address" : "Address of User",
+		"gender" : "male",
+	}
+	```
+
+  - PUT
+    - Description: Update logged-in user profile
 
 
 ## Data Model Diagram

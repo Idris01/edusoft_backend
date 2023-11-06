@@ -46,9 +46,10 @@ MALE = "male"
 FEMALE = "female"
 
 GENDERS = (
-        ("male", MALE),
-        ("female", FEMALE),
-        )
+    ("male", MALE),
+    ("female", FEMALE),
+)
+
 
 # Create your models here.
 class BaseModel(models.Model):
@@ -73,7 +74,8 @@ class BaseModel(models.Model):
 class BaseModelNameNoUnique(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(
-        max_length=100, null=False, help_text="name or title", blank=False)
+        max_length=100, null=False, help_text="name or title", blank=False
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -91,17 +93,16 @@ class BaseModelNameNoUnique(models.Model):
 class Profile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
-            settings.AUTH_USER_MODEL,
-            null=True, help_text="user profile",
-            on_delete=models.CASCADE)
-    address = models.CharField(
-            max_length=150, blank=False)
+        settings.AUTH_USER_MODEL,
+        null=True,
+        help_text="user profile",
+        on_delete=models.CASCADE,
+    )
+    address = models.CharField(max_length=150, blank=False)
     nationality = models.ForeignKey(
-            'cities_light.Country',
-            on_delete=models.SET_NULL,
-            null=True)
-    gender = models.CharField(
-            choices=GENDERS, max_length=10, blank=True, null=True)
+        "cities_light.Country", on_delete=models.SET_NULL, null=True
+    )
+    gender = models.CharField(choices=GENDERS, max_length=10, blank=True, null=True)
     date_of_birth = models.DateField(null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -118,15 +119,18 @@ class AppUser(AbstractUser):
     UNIQUE_TOGETHER = ("email", "username")
     REQUIRED_FIELDS = ("password", "username", "first_name", "last_name")
 
+
 class ActivationToken(models.Model):
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE, editable=False)
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, editable=False
+    )
     token = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     category = models.CharField(max_length=10, choices=TOKEN_CHOICES, default=ACTIVATE)
     created_at = models.DateTimeField(auto_now_add=True)
+
     def __str__(self):
-        return str(token)
+        return str(self.token)
+
 
 class Consultation(BaseModelNameNoUnique):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -195,6 +199,9 @@ class Department(BaseModelNameNoUnique):
     university = models.ForeignKey(University, on_delete=models.CASCADE)
     about = models.TextField(help_text="brief information about the department/school")
 
+    class Meta:
+        unique_together = ["name", "university"]
+
     def __str__(self):
         return f"{self.name} in {self.university.name}"
 
@@ -202,6 +209,10 @@ class Department(BaseModelNameNoUnique):
 class Course(BaseModelNameNoUnique):
     department = models.ForeignKey(Department, null=False, on_delete=models.CASCADE)
     about = models.TextField(help_text="course description")
+
+    class Meta:
+        unique_together = ["name", "department"]
+        ordering = ("name",)
 
     def __str__(self):
         return "{} in {}".format(self.name, self.department.university)
@@ -221,6 +232,9 @@ class Tuition(BaseModelNameNoUnique):
 class Degree(BaseModelNameNoUnique):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     about = models.TextField(help_text="breif details about degree")
+
+    class Meta:
+        unique_together = ["name", "course"]
 
     def __str__(self):
         return f"{self.name}: {self.course}"

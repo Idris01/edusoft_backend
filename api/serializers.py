@@ -1,8 +1,13 @@
 from rest_framework import serializers
-from backend.models import University, AppUser, Profile
+from backend.models import University, AppUser, Profile, Course
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
 import cities_light
+
+
+class CourseListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = "__all__"
 
 
 class UniversitySerializer(serializers.ModelSerializer):
@@ -11,7 +16,6 @@ class UniversitySerializer(serializers.ModelSerializer):
     languages = serializers.SerializerMethodField()
     created_by = serializers.SerializerMethodField(read_only=True)
     country_code = serializers.SerializerMethodField(read_only=True)
-
 
     class Meta:
         model = University
@@ -26,7 +30,7 @@ class UniversitySerializer(serializers.ModelSerializer):
             "accomodation",
             "website",
             "postal_code",
-            "country_code"
+            "country_code",
         ]
 
     def get_languages(self, obj):
@@ -53,25 +57,26 @@ class UniversitySerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = AppUser
-        fields = [
-                "id", "username", "first_name",
-                "last_name", "email", "is_active"]
+        fields = ["id", "username", "first_name", "last_name", "email", "is_active"]
+
 
 class EdusoftObtainTokenPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-        
+
         # Add custom claims
-        token['name'] = user.username
-        token['email'] = user.email
+        token["name"] = user.username
+        token["email"] = user.email
 
         return token
 
+
 class ProfileSerializer(serializers.ModelSerializer):
     nationality = serializers.SlugRelatedField(
-            slug_field="code2",
-            queryset=cities_light.models.Country.objects.all())
+        slug_field="code2", queryset=cities_light.models.Country.objects.all()
+    )
+
     class Meta:
         model = Profile
         fields = "__all__"
