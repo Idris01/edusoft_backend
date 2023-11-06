@@ -70,6 +70,24 @@ class BaseModel(models.Model):
         ]
 
 
+class BaseModelNameNoUnique(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(
+        max_length=100, null=False, help_text="name or title", blank=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+        ordering = ("name",)
+        constraints = [
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_name_not_empty",
+                check=models.Q(name__length__gt=0),
+            )
+        ]
+
+
 class Profile(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(
@@ -110,7 +128,7 @@ class ActivationToken(models.Model):
     def __str__(self):
         return str(token)
 
-class Consultation(BaseModel):
+class Consultation(BaseModelNameNoUnique):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     course = models.ForeignKey("Course", on_delete=models.CASCADE)
     status = models.CharField(max_length=15, choices=CONS_CHOICES)
@@ -121,14 +139,14 @@ class Consultation(BaseModel):
         return "{} by {} with satatus{}".format(self.name, self.user.username, self.status)
 
 
-class Payment(BaseModel):
+class Payment(BaseModelNameNoUnique):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     transaction_id = models.CharField(max_length=50)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS)
 
 
-class FeedBack(BaseModel):
+class FeedBack(BaseModelNameNoUnique):
     rating = models.IntegerField(
         validators=(MinValueValidator(1), MaxValueValidator(5)),
         help_text="""level of satisafaction
@@ -173,7 +191,7 @@ class University(BaseModel):
         return self.name
 
 
-class Department(BaseModel):
+class Department(BaseModelNameNoUnique):
     university = models.ForeignKey(University, on_delete=models.CASCADE)
     about = models.TextField(help_text="brief information about the department/school")
 
@@ -181,7 +199,7 @@ class Department(BaseModel):
         return f"{self.name} in {self.university.name}"
 
 
-class Course(BaseModel):
+class Course(BaseModelNameNoUnique):
     department = models.ForeignKey(Department, null=False, on_delete=models.CASCADE)
     about = models.TextField(help_text="course description")
 
@@ -189,7 +207,7 @@ class Course(BaseModel):
         return "{} in {}".format(self.name, self.department.university)
 
 
-class Tuition(BaseModel):
+class Tuition(BaseModelNameNoUnique):
     degrees = models.ManyToManyField("Degree", blank=True)
     amount = models.DecimalField(
         max_digits=9, decimal_places=2, help_text="tuition fee in dollars ($)"
@@ -200,7 +218,7 @@ class Tuition(BaseModel):
         return "$Tution: {}".format(self.amount)
 
 
-class Degree(BaseModel):
+class Degree(BaseModelNameNoUnique):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     about = models.TextField(help_text="breif details about degree")
 
