@@ -212,3 +212,13 @@ class TestCourse(APITestCase):
 
         # only one course has Nursing contained in its name
         self.assertEqual(search_data.get("count"),1)
+
+    def test_query_params(self):
+        """tests query params for country and course"""
+        url = "{}?country={}".format(
+                self.course_url, "ng")
+        
+        response = self.client.get(url)
+        search_data = json.loads(response.content.decode("utf-8"))
+        self.assertEqual(
+                search_data.get("count"),2)

@@ -29,6 +29,14 @@ class CourseListAPIView(ListAPIView):
     queryset = Course.objects.all()
     filter_backends = [filters.SearchFilter]
     search_fields = ["$name"]
+    
+    def get_queryset(self):
+        query_param = self.request.query_params.get("country")
+        if query_param:
+            return self.queryset.filter(
+                    department__university__country__code2__iexact=query_param)
+        return self.queryset
+
 
 class UserProfileAPIView(APIView):
     queryset = Profile.objects.all()
