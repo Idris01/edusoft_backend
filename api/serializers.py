@@ -5,9 +5,38 @@ import cities_light
 
 
 class CourseListSerializer(serializers.ModelSerializer):
+    university = serializers.SerializerMethodField(read_only=True)
+    university_id = serializers.SerializerMethodField(read_only=True)
+    department_id = serializers.SerializerMethodField(read_only=True)
+    department = serializers.SerializerMethodField(read_only=True)
+
     class Meta:
         model = Course
-        fields = "__all__"
+        fields = [
+            "id",
+            "name",
+            "department",
+            "university_id",
+            "department_id",
+            "about",
+            "university",
+        ]
+
+    def get_university(self, obj):
+        """Get the name of the univeristy"""
+        return obj.department.university.name
+
+    def get_university_id(self, obj):
+        """Get the id of the univeristy"""
+        return obj.department.university.id
+
+    def get_department(self, obj):
+        """Get the name of the univeristy"""
+        return obj.department.name
+
+    def get_department_id(self, obj):
+        """Get the name of the univeristy"""
+        return obj.department.id
 
 
 class UniversitySerializer(serializers.ModelSerializer):

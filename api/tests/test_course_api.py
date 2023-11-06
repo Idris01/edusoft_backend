@@ -188,5 +188,15 @@ class TestCourse(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         data = json.loads(response.content.decode("utf-8"))
-        print(data)
         self.assertEqual(data.get("count"), 5)
+
+    def test_course_contain_required_data(self):
+        """Test that the name of university is present in the course data"""
+        response = self.client.get(self.course_url)
+        data = json.loads(response.content.decode("utf-8"))
+
+        course = data.get("results", [None])[0]  # get a single course
+        self.assertIn("university", course)
+        self.assertIn("university_id", course)
+        self.assertIn("department", course)
+        self.assertIn("department_id", course)
