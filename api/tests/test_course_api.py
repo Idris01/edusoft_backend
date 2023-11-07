@@ -213,8 +213,9 @@ class TestCourse(APITestCase):
         # only one course has Nursing contained in its name
         self.assertEqual(search_data.get("count"),1)
 
-    def test_query_params(self):
+    def test_country_query_parameter(self):
         """tests query params for country and course"""
+        # query params for Nigeria
         url = "{}?country={}".format(
                 self.course_url, "ng")
         
@@ -222,3 +223,27 @@ class TestCourse(APITestCase):
         search_data = json.loads(response.content.decode("utf-8"))
         self.assertEqual(
                 search_data.get("count"),2)
+
+        # query params for UK
+        url = "{}?country={}".format(
+                self.course_url, "GB")
+        
+        response = self.client.get(url)
+        search_data = json.loads(response.content.decode("utf-8"))
+        self.assertEqual(
+                search_data.get("count"),3)
+
+    def test_country_and_search_query_parameter(self):
+        """tests query params for both  country and course in a url"""
+        # query params for Medicine in UK
+        url = "{}?search={}&country={}".format(
+                self.course_url,
+                "medicine",
+                "gb")
+        
+        response = self.client.get(url)
+        search_data = json.loads(response.content.decode("utf-8"))
+        # only one course with medicine in UK
+        self.assertEqual(
+                search_data.get("count"),1)
+
