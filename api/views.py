@@ -1,4 +1,5 @@
 from rest_framework.generics import (
+    RetrieveAPIView,
     ListAPIView,
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView,
@@ -13,6 +14,8 @@ from .serializers import (
     EdusoftObtainTokenPairSerializer,
     CourseNameSerializer,
     CountryNameSerializer,
+    CourseDetailSerializer,
+
 )
 from .validators import validate_password
 from rest_framework.response import Response
@@ -34,6 +37,11 @@ else:
     course_search_fields = ["@name"]
     university_list_search_field = ["@department__course__name"]
 
+
+class CourseDetailAPIView(RetrieveAPIView):
+    serializer_class = CourseDetailSerializer
+    queryset = Course.objects.all()
+    lookup_field = "id"
 
 class OptionAPIView(APIView):
     """Define an view of options of Course, and Country available"""

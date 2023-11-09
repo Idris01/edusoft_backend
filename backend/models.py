@@ -230,7 +230,7 @@ class Tuition(BaseModelNameNoUnique):
 
 
 class Degree(BaseModelNameNoUnique):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name="degrees")
     about = models.TextField(help_text="breif details about degree")
 
     class Meta:

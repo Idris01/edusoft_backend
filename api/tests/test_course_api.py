@@ -198,8 +198,8 @@ class TestCourse(APITestCase):
         course = data.get("results", [None])[0]  # get a single course
         self.assertIn("university", course)
         self.assertIn("university_id", course)
-        self.assertIn("department", course)
-        self.assertIn("department_id", course)
+        self.assertIn("name", course)
+        self.assertIn("id", course)
 
     def test_course_search_on_course_name(self):
         """test search for given course name"""
@@ -276,3 +276,31 @@ class TestCourse(APITestCase):
 
         # confirm that the "course" query is used
         self.assertIn("Medical laboratory Science", data.get("results")[0].get("name"))
+
+    def test_course_detail(self):
+        """ test that user can get detail of course"""
+        # fetch the list of courses
+        response = self.client.get(self.course_url)
+        # select the first course in the list
+        course = json.loads(response.content.decode("utf-8"))["results"][0]
+        url = reverse(
+                "api:course_detail",
+                kwargs={"id":course.get("id")})
+        
+        # get the details of the course
+        response = self.client.get(url)
+
+        self.assertEqual(
+                response.status_code,
+                status.HTTP_200_OK)
+
+        course_detail = json.loads(
+                response.content.decode("utf-8"))
+        
+        # confirm the detail is for the course
+        self.assertEqual(
+                course.get("id"),
+                course_detail.get("id"))
+        self.assertIn("about", course_detail)
+        self.assertIn("university", course_detail)
+        self.assertIn("degrees", course_detail)

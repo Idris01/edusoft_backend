@@ -3,31 +3,23 @@ from backend.models import University, AppUser, Profile, Course
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 import cities_light
 
-
-class CountryNameSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = cities_light.models.Country
-        fields = ["name", "code2"]
-
-
-class CourseListSerializer(serializers.ModelSerializer):
+class CourseDetailSerializer(serializers.ModelSerializer):
+    degrees = serializers.SlugRelatedField(
+            many=True,
+            read_only=True,
+            slug_field="name")
     university = serializers.SerializerMethodField(read_only=True)
-    university_id = serializers.SerializerMethodField(read_only=True)
     department_id = serializers.SerializerMethodField(read_only=True)
     department = serializers.SerializerMethodField(read_only=True)
+    university_id = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Course
         fields = [
-            "id",
-            "name",
-            "department",
-            "university_id",
-            "department_id",
-            "about",
-            "university",
-        ]
-
+                "id", "name", "about", "degrees",
+                "university", "university_id",
+                "department", "department_id"]
+    
     def get_university(self, obj):
         """Get the name of the univeristy"""
         return obj.department.university.name
@@ -44,6 +36,33 @@ class CourseListSerializer(serializers.ModelSerializer):
         """Get the name of the univeristy"""
         return obj.department.id
 
+
+class CountryNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = cities_light.models.Country
+        fields = ["name", "code2"]
+
+
+class CourseListSerializer(serializers.ModelSerializer):
+    university = serializers.SerializerMethodField(read_only=True)
+    university_id = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = Course
+        fields = [
+            "id",
+            "name",
+            "university_id",
+            "university",
+        ]
+
+    def get_university(self, obj):
+        """Get the name of the univeristy"""
+        return obj.department.university.name
+
+    def get_university_id(self, obj):
+        """Get the id of the univeristy"""
+        return obj.department.university.id
 
 class UniversitySerializer(serializers.ModelSerializer):
     city = serializers.SerializerMethodField()
