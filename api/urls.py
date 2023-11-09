@@ -8,6 +8,7 @@ from .views import (
     PasswordResetAPIView,
     UserProfileAPIView,
     CourseListAPIView,
+    OptionAPIView,
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -38,4 +39,5 @@ urlpatterns = [
     ),
     path("user/profile/", UserProfileAPIView.as_view(), name="profile_detail"),
     path("courses/list/", CourseListAPIView.as_view(), name="course_list"),
+    path("options/", OptionAPIView.as_view(), name="available_course_country"),
 ]

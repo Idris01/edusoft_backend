@@ -11,6 +11,8 @@ from .serializers import (
     UserSerializer,
     ProfileSerializer,
     EdusoftObtainTokenPairSerializer,
+    CourseNameSerializer,
+    CountryNameSerializer,
 )
 from .validators import validate_password
 from rest_framework.response import Response
@@ -22,20 +24,51 @@ from django.contrib.auth.hashers import make_password
 from .permissions import IsAdminOrReadOnly, IsAdminReadOnly
 from django.conf import settings
 from rest_framework_simplejwt.views import TokenObtainPairView
+import os
+
+# define search filelds based on environment
+if os.getenv("ENVIRONMENT") == "Test":
+    course_search_fields = ["$name"]
+    university_list_search_field = ["$department__course__name"]
+else:
+    course_search_fields = ["@name"]
+    university_list_search_field = ["@department__course__name"]
+
+
+class OptionAPIView(APIView):
+    """ Define an view of options of Course, and Country available"""
+    def get(self, request, *args, **kwargs):
+        country_names = CountryNameSerializer(
+                Country.objects.all(),
+                many=True).data
+        course_names = CourseNameSerializer(
+                Course.objects.all(),
+                many=True).data
+        return Response(dict(
+            countries=country_names,
+            courses=course_names),
+                        status=status.HTTP_200_OK)
 
 
 class CourseListAPIView(ListAPIView):
     serializer_class = CourseListSerializer
     queryset = Course.objects.all()
     filter_backends = [filters.SearchFilter]
-    search_fields = ["$name"]
+    search_fields = course_search_fields
     
     def get_queryset(self):
-        query_param = self.request.query_params.get("country")
-        if query_param:
-            return self.queryset.filter(
-                    department__university__country__code2__iexact=query_param)
-        return self.queryset
+        country_param = self.request.query_params.get("country")
+        search_param = self.request.query_params.get("search")
+        course_param = self.request.query_params.get("course")
+        query_result = self.queryset
+        if country_param:
+            query_result = query_result.filter(
+                    department__university__country__code2__iexact=country_param)
+        if course_param and not search_param:
+            query_result = query_result.filter(
+                    name__iexact=course_param)
+
+        return query_result
 
 
 class UserProfileAPIView(APIView):
@@ -240,7 +273,7 @@ class UniversityListCreateAPIView(ListCreateAPIView):
     queryset = University.objects.all()
     serializer_class = UniversitySerializer
     filter_backends = [filters.SearchFilter]
-    search_fields = ["$department__course__name"]
+    search_fields = university_list_search_field
 
     def post(self, request, *args, **kwargs):
         data = {key: ",".join(value) for key, value in dict(request.data).items()}

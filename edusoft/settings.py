@@ -46,6 +46,10 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
 ]
 
+if not DEBUG :
+    INSTALLED_APPS.extend(["django.contrib.postgres"])
+
+
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",

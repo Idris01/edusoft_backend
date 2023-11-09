@@ -4,7 +4,7 @@ from django.urls import reverse
 from backend.models import AppUser, University, Department, Language, Degree, Course
 from cities_light.models import Country, City
 import json
-
+import os
 
 """Test Module for the Course Model Api"""
 
@@ -246,4 +246,55 @@ class TestCourse(APITestCase):
         # only one course with medicine in UK
         self.assertEqual(
                 search_data.get("count"),1)
+
+
+    def test_course_name_and_country_list(self):
+        """ Test available courses and country lists"""
+        option_url = reverse("api:available_course_country")
+        response = self.client.get(option_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        option_data = json.loads(
+                response.content.decode("utf-8"))
+        self.assertIn("courses", option_data)
+        self.assertIn("countries", option_data)
+
+    def test_course_and_search_query_parameter(self):
+        """Test the course and search parameter
+
+        Based on the design of the API, the url query is not expected to have
+        the search and the course queries at the same time, but when it happens,
+        the course query is ignored in favor of the broader search query
+        """
+
+        url = "{}?search={}&course={}".format(
+                self.course_url,
+                "Nursing",
+                "Medical laboratory Science")
+        response = self.client.get(url)
+        self.assertEqual(
+                response.status_code,
+                status.HTTP_200_OK)
+        
+        data = json.loads(response.content.decode("utf-8"))
+        self.assertEqual(data.get("count"), 1)
+        
+        # confirm that the "course" query is ignored
+        self.assertIn(
+                "nursing",
+                data.get("results")[0].get("name").lower())
+
+        # make new request with course query
+        url = "{}?course={}".format(
+                self.course_url,
+                "Medical laboratory Science")
+        response = self.client.get(url)
+        data = json.loads(response.content.decode("utf-8"))
+        self.assertEqual(data.get("count"), 1)
+        
+        # confirm that the "course" query is used
+        self.assertIn(
+                "Medical laboratory Science",
+                data.get("results")[0].get("name"))
 

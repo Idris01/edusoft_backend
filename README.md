@@ -251,6 +251,40 @@ curl -X GET <base_url>/universities/f8497301-0e9f-403f-9b84-6fa38c18d336
 	}
 	```
 
+
+### `/api/options`
+-  Methods: GET
+-  Description: This exposes choice of options currently available for the Edusoft API, which can be use in form as filters in the `Frontend`
+
+-  Sample Request:
+```
+curl -X GET <base-url>/api/options -H "Content-Type: application/json"
+```
+
+- Sample Response
+
+```
+{
+    'countries': [
+        {
+            'name': 'Nigeria',
+            'code2': 'NG'
+        }, 
+        {
+            'name': 'United Kingdom',
+            'code2': 'GB'
+        }],
+    'courses': [
+        {'name': 'Animal Production and Health'},
+        {'name': 'Crop Production'},
+        {'name': 'General Medicine'},
+        {'name': 'Medical laboratory Science'}, 
+        {'name': 'Nursing studies'}
+        ]
+}
+```
+
+
 ## Data Model Diagram
 
 ![datamodel]('updatedModelDiagram.png')
@@ -323,5 +357,5 @@ cp db.sqlite3 test_db.sqlite3
 3. Run the test
 
 ```
-python manage.py test api/tests --keepdb
+ENVIRONMENT=Test ./manage.py test api/tests --keepdb
 ```

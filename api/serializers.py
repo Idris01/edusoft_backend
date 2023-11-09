@@ -4,6 +4,13 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 import cities_light
 
 
+class CountryNameSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = cities_light.models.Country
+        fields = ["name", "code2"]
+
+
 class CourseListSerializer(serializers.ModelSerializer):
     university = serializers.SerializerMethodField(read_only=True)
     university_id = serializers.SerializerMethodField(read_only=True)
@@ -109,3 +116,8 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = "__all__"
+
+class CourseNameSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Course
+        fields = ["name"]
