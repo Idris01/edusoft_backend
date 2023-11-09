@@ -214,37 +214,25 @@ curl -X GET <base_url>/universities/f8497301-0e9f-403f-9b84-6fa38c18d336
 				{
 					'id': 'df6544b1-10f9-4b68-8df7-8420158dd8fe',
 					'name': 'Animal Production and Health',
-					'department': 'Agricultural of Sciences',
 					'university_id': 'cc932788-0f3c-4547-b4a8-10070d1d2fb5',
-					'department_id': 'd1c1b6e3-fb65-4144-8a48-b848ae693604',
-					'about': 'Study of Farm animal production and health',
 					'university': 'osun state university'
 				},
 				{
 					'id': 'e8e8c34c-590c-433b-a814-67e51f93b47f',
 					'name': 'Crop Production',
-					'department': 'Agricultural of Sciences',
 					'university_id': 'cc932788-0f3c-4547-b4a8-10070d1d2fb5',
-					'department_id': 'd1c1b6e3-fb65-4144-8a48-b848ae693604',
-					'about': 'Study of Crop Production',
 					'university': 'osun state university'
 				},
 				{
 					'id': 'dfb16994-6000-45c9-8c8a-3f4baad56ea9',
 					'name': 'General Medicine',
-					'department': 'Medical studies',
 					'university_id': 'ebbb46f3-c309-4c9e-aeaa-7b731d6d9120',
-					'department_id': 'e08e8096-0045-4700-8439-ea9df7bbeb24',
-					'about': 'General Studies in Medicine',
 					'university': 'University of london'
 				},
 				{
 					'id': 'cb039da2-b5bd-4bd2-9575-b2891a63ab3d',
 					'name': 'Medical laboratory Science',
-					'department': 'Medical studies',
 					'university_id': 'ebbb46f3-c309-4c9e-aeaa-7b731d6d9120',
-					'department_id': 'e08e8096-0045-4700-8439-ea9df7bbeb24',
-					'about': 'Medical lab studies',
 					'university': 'University of london'
 				},
 			]
@@ -283,6 +271,28 @@ curl -X GET <base-url>/api/options -H "Content-Type: application/json"
 }
 ```
 
+### `/api/course/<slug:id>/`
+-  Methods: GET
+-  Description: Get detail of a given course with id "id"
+-  Sample Request:
+```
+curl -X GET <base-url>/api/course/677062cf-8fc1-4ce7-939e-565109c132ad
+```
+
+-  Sample Response:
+
+```
+{
+	'id': '677062cf-8fc1-4ce7-939e-565109c132ad',
+	'name': 'Animal Production and Health',
+	'about': 'This deals with the study of Animal Production and Health',
+	'degrees': [],
+	'university': 'University Of Ilorin',
+	'university_id': 'e7e484d9-6b2c-4e80-af09-d085f90ddacc',
+	'department': 'Department Of Agriculture',
+	'department_id': '9339dc20-b311-4998-ad83-6fcddd0f3aaa'
+}
+```
 
 ## Data Model Diagram
 

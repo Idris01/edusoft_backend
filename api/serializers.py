@@ -3,11 +3,9 @@ from backend.models import University, AppUser, Profile, Course
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 import cities_light
 
+
 class CourseDetailSerializer(serializers.ModelSerializer):
-    degrees = serializers.SlugRelatedField(
-            many=True,
-            read_only=True,
-            slug_field="name")
+    degrees = serializers.SlugRelatedField(many=True, read_only=True, slug_field="name")
     university = serializers.SerializerMethodField(read_only=True)
     department_id = serializers.SerializerMethodField(read_only=True)
     department = serializers.SerializerMethodField(read_only=True)
@@ -16,10 +14,16 @@ class CourseDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
         fields = [
-                "id", "name", "about", "degrees",
-                "university", "university_id",
-                "department", "department_id"]
-    
+            "id",
+            "name",
+            "about",
+            "degrees",
+            "university",
+            "university_id",
+            "department",
+            "department_id",
+        ]
+
     def get_university(self, obj):
         """Get the name of the univeristy"""
         return obj.department.university.name
@@ -63,6 +67,7 @@ class CourseListSerializer(serializers.ModelSerializer):
     def get_university_id(self, obj):
         """Get the id of the univeristy"""
         return obj.department.university.id
+
 
 class UniversitySerializer(serializers.ModelSerializer):
     city = serializers.SerializerMethodField()

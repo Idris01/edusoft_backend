@@ -15,7 +15,6 @@ from .serializers import (
     CourseNameSerializer,
     CountryNameSerializer,
     CourseDetailSerializer,
-
 )
 from .validators import validate_password
 from rest_framework.response import Response
@@ -42,6 +41,7 @@ class CourseDetailAPIView(RetrieveAPIView):
     serializer_class = CourseDetailSerializer
     queryset = Course.objects.all()
     lookup_field = "id"
+
 
 class OptionAPIView(APIView):
     """Define an view of options of Course, and Country available"""
