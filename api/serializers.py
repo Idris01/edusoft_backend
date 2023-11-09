@@ -5,7 +5,6 @@ import cities_light
 
 
 class CountryNameSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = cities_light.models.Country
         fields = ["name", "code2"]
@@ -116,6 +115,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = "__all__"
+
 
 class CourseNameSerializer(serializers.ModelSerializer):
     class Meta:

@@ -269,7 +269,7 @@ curl -X GET <base-url>/api/options -H "Content-Type: application/json"
         {
             'name': 'Nigeria',
             'code2': 'NG'
-        }, 
+        },
         {
             'name': 'United Kingdom',
             'code2': 'GB'
@@ -278,9 +278,8 @@ curl -X GET <base-url>/api/options -H "Content-Type: application/json"
         {'name': 'Animal Production and Health'},
         {'name': 'Crop Production'},
         {'name': 'General Medicine'},
-        {'name': 'Medical laboratory Science'}, 
-        {'name': 'Nursing studies'}
-        ]
+        {'name': 'Medical laboratory Science'},
+        {'name': 'Nursing studies'}]
 }
 ```
 

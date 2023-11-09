@@ -36,18 +36,14 @@ else:
 
 
 class OptionAPIView(APIView):
-    """ Define an view of options of Course, and Country available"""
+    """Define an view of options of Course, and Country available"""
+
     def get(self, request, *args, **kwargs):
-        country_names = CountryNameSerializer(
-                Country.objects.all(),
-                many=True).data
-        course_names = CourseNameSerializer(
-                Course.objects.all(),
-                many=True).data
-        return Response(dict(
-            countries=country_names,
-            courses=course_names),
-                        status=status.HTTP_200_OK)
+        country_names = CountryNameSerializer(Country.objects.all(), many=True).data
+        course_names = CourseNameSerializer(Course.objects.all(), many=True).data
+        return Response(
+            dict(countries=country_names, courses=course_names), status=status.HTTP_200_OK
+        )
 
 
 class CourseListAPIView(ListAPIView):
@@ -55,7 +51,7 @@ class CourseListAPIView(ListAPIView):
     queryset = Course.objects.all()
     filter_backends = [filters.SearchFilter]
     search_fields = course_search_fields
-    
+
     def get_queryset(self):
         country_param = self.request.query_params.get("country")
         search_param = self.request.query_params.get("search")
@@ -63,10 +59,10 @@ class CourseListAPIView(ListAPIView):
         query_result = self.queryset
         if country_param:
             query_result = query_result.filter(
-                    department__university__country__code2__iexact=country_param)
+                department__university__country__code2__iexact=country_param
+            )
         if course_param and not search_param:
-            query_result = query_result.filter(
-                    name__iexact=course_param)
+            query_result = query_result.filter(name__iexact=course_param)
 
         return query_result
 

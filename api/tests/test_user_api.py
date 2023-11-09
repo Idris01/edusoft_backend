@@ -69,76 +69,56 @@ class AppUserTest(APITestCase):
         email = "resetIt@gmail.com"
 
         user = AppUser.objects.create_user(
-                username="yemi",
-                email=email,
-                password=old_passwd,
-                first_name="myfirstname",
-                last_name="mylastname")
-        user.is_active = True;
+            username="yemi",
+            email=email,
+            password=old_passwd,
+            first_name="myfirstname",
+            last_name="mylastname",
+        )
+        user.is_active = True
         user.save()
-        self.obj_list.append(user) # delete user at cleanup
+        self.obj_list.append(user)  # delete user at cleanup
         response = self.client.post(
-              self.login_url,
-              data=dict(
-                  email=email,
-                  password=old_passwd)
-              )
+            self.login_url, data=dict(email=email, password=old_passwd)
+        )
 
         # assert that user is able to login
-        self.assertEqual(
-                response.status_code,
-                status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         self.client.logout()  # clear old credentials
-        
-        # send a post request for new passord
-        response = self.client.get(
-                self.passwd_reset_url + f"?email={email}")
-        reset_data = json.loads(
-                response.content.decode("utf-8"))
 
-        self.assertEqual(
-                response.status_code,
-                status.HTTP_200_OK)
-        
+        # send a post request for new passord
+        response = self.client.get(self.passwd_reset_url + f"?email={email}")
+        reset_data = json.loads(response.content.decode("utf-8"))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
         # check that "reset_token" is present ,this is restricted to the frontend
-        self.assertIn(
-                "reset_token",
-                reset_data)
+        self.assertIn("reset_token", reset_data)
 
         verify_url = reverse(
-                "api:verify_account",
-                kwargs=dict(token=reset_data.get("reset_token")))
+            "api:verify_account", kwargs=dict(token=reset_data.get("reset_token"))
+        )
 
         # supply new password
         response = self.client.post(
-                verify_url,
-                data=dict(
-                    password=new_passwd,
-                    confirm_password=new_passwd))
-        self.assertEqual(
-                response.status_code,
-                status.HTTP_200_OK)
+            verify_url, data=dict(password=new_passwd, confirm_password=new_passwd)
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
         # login with new password
         response = self.client.post(
-              self.login_url,
-              data=dict(
-                  email=email,
-                  password=new_passwd))
-        
+            self.login_url, data=dict(email=email, password=new_passwd)
+        )
+
         # verify login with new password
-        self.assertEqual(
-                response.status_code,
-                status.HTTP_200_OK)
-
-
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_login_user(self):
         """Test userlogin with token"""
         email = "testlogin@gmail.com"
         password = "@Iwill9evergiveUp"
-        username="loginTester"
+        username = "loginTester"
 
         data = dict(
             username=username,
@@ -148,87 +128,66 @@ class AppUserTest(APITestCase):
             password=password,
             confirm_password=password,
         )
-        
-        # register the new user
-        response = self.client.post(
-                self.registration_url,
-                data=data)
 
-        reg_response = json.loads(
-                response.content.decode("utf-8"))
+        # register the new user
+        response = self.client.post(self.registration_url, data=data)
+
+        reg_response = json.loads(response.content.decode("utf-8"))
 
         reg_user = AppUser.objects.filter(email=email)
-        
+
         if reg_user:
             # add user to objects to be deleted during cleanup
             self.obj_list.append(reg_user[0])
 
         # assert that the user was successfully created
-        self.assertEqual(
-                response.status_code,
-                status.HTTP_201_CREATED)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # login the user, this should fail prior to user verification
 
         response_auth = self.client.post(
-                self.login_url,
-                data=dict(
-                    email=email,
-                    password=password))
+            self.login_url, data=dict(email=email, password=password)
+        )
 
-        content_auth = json.loads(
-                response_auth.content.decode('utf-8'))
-        
-        self.assertEqual(
-                response_auth.status_code,
-                status.HTTP_401_UNAUTHORIZED)
+        content_auth = json.loads(response_auth.content.decode("utf-8"))
 
-        self.assertIn(
-                "no active account",
-                content_auth.get("detail").lower())
+        self.assertEqual(response_auth.status_code, status.HTTP_401_UNAUTHORIZED)
+
+        self.assertIn("no active account", content_auth.get("detail").lower())
 
         # verify account to activate user
         verify_url = reverse(
-                "api:verify_account",
-                kwargs=dict(token=reg_response.get("token")))
+            "api:verify_account", kwargs=dict(token=reg_response.get("token"))
+        )
         verify_response = self.client.get(verify_url)
-        self.assertEqual(
-                verify_response.status_code,
-                status.HTTP_200_OK)
+        self.assertEqual(verify_response.status_code, status.HTTP_200_OK)
 
         # login the user, this should return some token
         response = self.client.post(
-                self.login_url,
-                data=dict(
-                    email=email,
-                    password=password))
-        self.assertEqual(
-                response.status_code,
-                status.HTTP_200_OK)
-        content = json.loads(
-                response.content.decode('utf-8'))
+            self.login_url, data=dict(email=email, password=password)
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        content = json.loads(response.content.decode("utf-8"))
 
-        self.assertEqual(email, content.get('email'))
-        self.assertEqual(username, content.get('username'))
+        self.assertEqual(email, content.get("email"))
+        self.assertEqual(username, content.get("username"))
         self.assertIn("access", content)
         self.assertIn("refresh", content)
         self.assertIn("refresh_expires_seconds", content)
         self.assertIn("access_expires_seconds", content)
         self.assertGreater(
-                content.get("refresh_expires_seconds"),
-                content.get("access_expires_seconds"))
+            content.get("refresh_expires_seconds"), content.get("access_expires_seconds")
+        )
 
         token_refresh_url = reverse("api:token_refresh")
         refresh_response = self.client.post(
-                token_refresh_url,
-                data=dict(refresh=content.get("refresh")))
-        refresh_data = json.loads(
-                refresh_response.content.decode("utf-8"))
-        
-        self.assertIn("access", refresh_data) # confirm new access token
-        self.assertNotEqual(
-                refresh_data.get("access"),
-                content.get("access"))      # confirm new token differs from old
+            token_refresh_url, data=dict(refresh=content.get("refresh"))
+        )
+        refresh_data = json.loads(refresh_response.content.decode("utf-8"))
 
+        self.assertIn("access", refresh_data)  # confirm new access token
+        self.assertNotEqual(
+            refresh_data.get("access"), content.get("access")
+        )  # confirm new token differs from old
 
     def test_create_user(self):
         """Test new user created successfully"""
@@ -319,17 +278,13 @@ class AppUserTest(APITestCase):
         response = self.client.post(self.registration_url, data=data)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        
-        response_data = json.loads(response.content.decode('utf-8'))
-        self.assertIn(
-                "registration successfull",
-                response_data.get("message", []))
+
+        response_data = json.loads(response.content.decode("utf-8"))
+        self.assertIn("registration successfull", response_data.get("message", []))
 
         # confirm the user is indeed created
-        self.assertEqual(
-                user_count + 1,
-                AppUser.objects.count())
-        
+        self.assertEqual(user_count + 1, AppUser.objects.count())
+
     def test_create_user_missing_requirements(self):
         """Test new user created successfully"""
         email = "teste1@gmail.com"

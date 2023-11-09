@@ -14,6 +14,7 @@ from dotenv import load_dotenv
 import os
 from pathlib import Path
 from datetime import timedelta
+
 load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -43,10 +44,10 @@ INSTALLED_APPS = [
     "cities_light",
     "rest_framework",
     "corsheaders",
-    'rest_framework_simplejwt',
+    "rest_framework_simplejwt",
 ]
 
-if not DEBUG :
+if not DEBUG:
     INSTALLED_APPS.extend(["django.contrib.postgres"])
 
 

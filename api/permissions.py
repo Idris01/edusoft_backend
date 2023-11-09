@@ -3,6 +3,7 @@ from django.contrib.auth.models import AnonymousUser
 
 """ Define custom permissions"""
 
+
 class IsAdminOrReadOnly(permissions.BasePermission):
     """Allows non_safe methods only to Admin"""
 
