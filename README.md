@@ -271,7 +271,7 @@ curl -X GET <base-url>/api/options -H "Content-Type: application/json"
 }
 ```
 
-### `/api/course/<slug:id>/`
+### `/api/courses/<slug:id>/`
 -  Methods: GET
 -  Description: Get detail of a given course with id "id"
 -  Sample Request:
