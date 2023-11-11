@@ -73,6 +73,7 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
     "message": "Account Verified"
   }
   ```
+
 ### `/api/token`
 - Methods: `POST`
 - Description: login registered user to obtain token pair i.e access and refresh token
@@ -102,8 +103,26 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
    After obtaining the token key pair, the access token is always attached to subsequent request as follows
 
    ```
-   curl <BASE_URL>/api/users/<id>/profile -H "Content-Type=application/json, Authorization=Bearer <access_token>"
+   curl <BASE_URL>/api/users/<id>/profile -H "Content-Type:application/json" -H "Authorization:Bearer <access_token>"
    ```
+
+### `/api/token/refresh`
+- Methods: POST
+- Description: request for new access token to maintain log-in state
+- Sample Request:
+
+```
+curl -X POST <base-url>/api/token/refresh -H "Content-Type:application/json" -d '{"refresh": <refresh_token>}'
+```
+
+- Sample Response:
+
+```
+{
+	"access": <new-access-token>
+}
+```
+
 
 ### `/api/universites`
 - Methods: `GET`, `POST`
@@ -139,19 +158,6 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
 }
 ```
 
-### `/api/user/profile`
-- Methods: GET, POST
-
-- GET
-  - Description: Get the profile details of a given logged in user
-  - Sample Request:
-  ```
-  curl -X GET <baseurl>/api/user/profile \
-	-H "Content-Type: applicatio/json \
-   	-H "Authorization: Bearer <access-token>"
-  ```
-
-  - Sample Response:
 
 ### `/api/universities/<slug:id>`
 - Methods: `GET`, `PUT`, `DELETE`
@@ -165,8 +171,21 @@ curl -X GET <base_url>/universities/f8497301-0e9f-403f-9b84-6fa38c18d336
    - Response Body
 
 ```
-{'id': 'f8497301-0e9f-403f-9b84-6fa38c18d336', 'name': 'Lagos State University', 'history': 'Founded August 1990', 'languages': ['Yoruba', 'English'], 'created_by': 'adeyemi', 'country': 'Nigeria', 'city': 'Lagos', 'accomodation': 'On-campus accomodation available', 'website': 'https://www.unilag.edu.ng', 'postal_code': '210500', 'country_code': 'NG'}
+{
+	'id': 'f8497301-0e9f-403f-9b84-6fa38c18d336',
+	'name': 'Lagos State University',
+	'history': 'Founded August 1990',
+	'languages': ['Yoruba', 'English'],
+	'created_by': 'adeyemi',
+	'country': 'Nigeria',
+	'city': 'Lagos',
+	'accomodation': 'On-campus accomodation available',
+	'website': 'https://www.unilag.edu.ng',
+	'postal_code': '210500',
+	'country_code': 'NG'
+}
 ```
+
    - *PUT* Request:
    Update details of a University of `id`
 
@@ -192,9 +211,33 @@ curl -X GET <base_url>/universities/f8497301-0e9f-403f-9b84-6fa38c18d336
 		"gender" : "male",
 	}
 	```
-
   - PUT
     - Description: Update logged-in user profile
+
+
+
+### `/api/user`
+- Methods:
+    - GET (Authentication required)
+      - Description: Get the primary information of a given authenticated user
+	- Sample Request:
+	```
+	curl -X GET <base-url>/api/user \
+		-H "Content-Type: application/json" \
+		-H "Authorization: Bearer {access_token}"
+	```
+     	- Sample Response:
+	{
+		"id": 3f225-6b51-43bf-ad4f-e9c79800b92f',
+		'username': 'adeyemi',
+		'first_name': 'ade',
+		'last_name': 'idris',
+		'email': 'idris01@gmail.com',
+		'is_active': True
+	}
+
+	```
+
 
 ### `/api/courses/list`
   - Methods

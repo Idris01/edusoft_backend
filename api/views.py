@@ -44,11 +44,9 @@ class UserDetailAPIView(APIView):
     serializer_class = UserSerializer
 
     def get(self, request, *args, **kwargs):
-        serialized_data = self.serializer_class(
-                request.user).data
-        return Response(
-                serialized_data,
-                status=status.HTTP_200_OK)
+        serialized_data = self.serializer_class(request.user).data
+        return Response(serialized_data, status=status.HTTP_200_OK)
+
 
 class CourseDetailAPIView(RetrieveAPIView):
     serializer_class = CourseDetailSerializer
@@ -197,9 +195,9 @@ class EdusoftTokenObtainPairView(TokenObtainPairView):
             response.data["email"] = user.email
             ref_sec = settings.SIMPLE_JWT.get("REFRESH_TOKEN_LIFETIME").total_seconds()
             acc_sec = settings.SIMPLE_JWT.get("ACCESS_TOKEN_LIFETIME").total_seconds()
-            
+
             now = datetime.now().timestamp()
-            response.data["refresh_expires_seconds"] = int((ref_sec * 1000)  + now)
+            response.data["refresh_expires_seconds"] = int((ref_sec * 1000) + now)
             response.data["access_expires_seconds"] = int((acc_sec * 1000) + now)
         return response
 
