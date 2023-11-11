@@ -4,6 +4,7 @@ from rest_framework import status
 from django.urls import reverse
 from backend.models import AppUser
 import json
+from datetime import datetime
 
 
 class AppUserTest(APITestCase):
@@ -177,6 +178,18 @@ class AppUserTest(APITestCase):
         self.assertGreater(
             content.get("refresh_expires_seconds"), content.get("access_expires_seconds")
         )
+
+        refresh_time = content.get("refresh_expires_seconds")
+        access_time = content.get("access_expires_seconds")
+
+        now = int(datetime.now().timestamp())
+
+        self.assertGreater(refresh_time, now)
+        self.assertGreater(access_time, now)
+        self.assertGreater(
+                access_time - now, 299000)
+        self.assertGreater(
+                refresh_time - now, 60*60*24*960)
 
         token_refresh_url = reverse("api:token_refresh")
         refresh_response = self.client.post(

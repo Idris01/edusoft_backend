@@ -27,6 +27,7 @@ from .permissions import IsAdminOrReadOnly, IsAdminReadOnly
 from django.conf import settings
 from rest_framework_simplejwt.views import TokenObtainPairView
 import os
+from datetime import datetime
 
 # define search filelds based on environment
 if os.getenv("ENVIRONMENT") == "Test":
@@ -184,8 +185,10 @@ class EdusoftTokenObtainPairView(TokenObtainPairView):
             response.data["email"] = user.email
             ref_sec = settings.SIMPLE_JWT.get("REFRESH_TOKEN_LIFETIME").total_seconds()
             acc_sec = settings.SIMPLE_JWT.get("ACCESS_TOKEN_LIFETIME").total_seconds()
-            response.data["refresh_expires_seconds"] = ref_sec
-            response.data["access_expires_seconds"] = acc_sec
+            
+            now = datetime.now().timestamp()
+            response.data["refresh_expires_seconds"] = int((ref_sec * 1000)  + now)
+            response.data["access_expires_seconds"] = int((acc_sec * 1000) + now)
         return response
 
 
