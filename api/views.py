@@ -38,6 +38,18 @@ else:
     university_list_search_field = ["@department__course__name"]
 
 
+class UserDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    queryset = AppUser.objects.all()
+    serializer_class = UserSerializer
+
+    def get(self, request, *args, **kwargs):
+        serialized_data = self.serializer_class(
+                request.user).data
+        return Response(
+                serialized_data,
+                status=status.HTTP_200_OK)
+
 class CourseDetailAPIView(RetrieveAPIView):
     serializer_class = CourseDetailSerializer
     queryset = Course.objects.all()

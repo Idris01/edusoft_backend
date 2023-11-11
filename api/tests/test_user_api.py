@@ -345,3 +345,48 @@ class AppUserTest(APITestCase):
         self.client.login(email=self.test_email, password=self.test_password)
         response = self.client.get(self.registration_url)
         self.assertTrue(response.status_code, status.HTTP_200_OK)
+
+
+    def test_get_auth_user_data(self):
+        """Test that a an auth user can fetch basic credentials"""
+
+        response = self.client.post(
+                self.login_url,
+                data=dict(
+                    email=self.test_email,
+                    password=self.test_password))
+
+        self.assertEqual(
+                response.status_code,
+                status.HTTP_200_OK)
+
+        data = json.loads(
+                response.content.decode("utf-8"))
+        access = data.get("access")
+
+        auth_user_url = reverse("api:user_data")
+
+        # send request as anonymous user
+        response = self.client.get(auth_user_url)
+
+        # anonymous user should'nt have access
+        self.assertIn(
+                response.status_code,
+                (
+                    status.HTTP_400_BAD_REQUEST,
+                    status.HTTP_401_UNAUTHORIZED,
+                    status.HTTP_403_FORBIDDEN))
+
+        self.client.credentials(
+                HTTP_AUTHORIZATION="Bearer {}".format(access))
+
+        response = self.client.get(auth_user_url)
+
+        self.assertEqual(
+                response.status_code,
+                status.HTTP_200_OK)
+
+        auth_data = json.loads(
+                response.content.decode("utf-8"))
+        self.assertIn("email", auth_data)
+        self.assertIn("username", auth_data)
