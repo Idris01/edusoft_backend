@@ -91,6 +91,8 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
   ```
   {
     "username":"idrys01",
+    "first_name":"adeyemi",
+    "last_name":"idris",
     "email": "idrys01@gmail.com",
     "access": <access_token>,
     "refresh": <refresh_token>,

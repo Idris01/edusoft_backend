@@ -193,6 +193,9 @@ class EdusoftTokenObtainPairView(TokenObtainPairView):
             user = AppUser.objects.get(email=request.data.get("email"))
             response.data["username"] = user.username
             response.data["email"] = user.email
+            response.data["first_name"] = user.first_name
+            response.data["last_name"] = user.last_name
+
             ref_sec = settings.SIMPLE_JWT.get("REFRESH_TOKEN_LIFETIME").total_seconds()
             acc_sec = settings.SIMPLE_JWT.get("ACCESS_TOKEN_LIFETIME").total_seconds()
 

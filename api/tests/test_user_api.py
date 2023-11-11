@@ -172,6 +172,8 @@ class AppUserTest(APITestCase):
         self.assertEqual(email, content.get("email"))
         self.assertEqual(username, content.get("username"))
         self.assertIn("access", content)
+        self.assertIn("first_name", content)
+        self.assertIn("last_name", content)
         self.assertIn("refresh", content)
         self.assertIn("refresh_expires_seconds", content)
         self.assertIn("access_expires_seconds", content)
