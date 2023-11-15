@@ -1,4 +1,5 @@
 from rest_framework.generics import (
+    RetrieveAPIView,
     ListAPIView,
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView,
@@ -13,6 +14,7 @@ from .serializers import (
     EdusoftObtainTokenPairSerializer,
     CourseNameSerializer,
     CountryNameSerializer,
+    CourseDetailSerializer,
 )
 from .validators import validate_password
 from rest_framework.response import Response
@@ -25,6 +27,7 @@ from .permissions import IsAdminOrReadOnly, IsAdminReadOnly
 from django.conf import settings
 from rest_framework_simplejwt.views import TokenObtainPairView
 import os
+from datetime import datetime
 
 # define search filelds based on environment
 if os.getenv("ENVIRONMENT") == "Test":
@@ -33,6 +36,22 @@ if os.getenv("ENVIRONMENT") == "Test":
 else:
     course_search_fields = ["@name"]
     university_list_search_field = ["@department__course__name"]
+
+
+class UserDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    queryset = AppUser.objects.all()
+    serializer_class = UserSerializer
+
+    def get(self, request, *args, **kwargs):
+        serialized_data = self.serializer_class(request.user).data
+        return Response(serialized_data, status=status.HTTP_200_OK)
+
+
+class CourseDetailAPIView(RetrieveAPIView):
+    serializer_class = CourseDetailSerializer
+    queryset = Course.objects.all()
+    lookup_field = "id"
 
 
 class OptionAPIView(APIView):
@@ -174,10 +193,15 @@ class EdusoftTokenObtainPairView(TokenObtainPairView):
             user = AppUser.objects.get(email=request.data.get("email"))
             response.data["username"] = user.username
             response.data["email"] = user.email
+            response.data["first_name"] = user.first_name
+            response.data["last_name"] = user.last_name
+
             ref_sec = settings.SIMPLE_JWT.get("REFRESH_TOKEN_LIFETIME").total_seconds()
             acc_sec = settings.SIMPLE_JWT.get("ACCESS_TOKEN_LIFETIME").total_seconds()
-            response.data["refresh_expires_seconds"] = ref_sec
-            response.data["access_expires_seconds"] = acc_sec
+
+            now = datetime.now().timestamp()
+            response.data["refresh_expires_seconds"] = int((ref_sec * 1000) + now)
+            response.data["access_expires_seconds"] = int((acc_sec * 1000) + now)
         return response
 
 

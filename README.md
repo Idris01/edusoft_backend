@@ -73,6 +73,7 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
     "message": "Account Verified"
   }
   ```
+
 ### `/api/token`
 - Methods: `POST`
 - Description: login registered user to obtain token pair i.e access and refresh token
@@ -90,6 +91,8 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
   ```
   {
     "username":"idrys01",
+    "first_name":"adeyemi",
+    "last_name":"idris",
     "email": "idrys01@gmail.com",
     "access": <access_token>,
     "refresh": <refresh_token>,
@@ -102,8 +105,26 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
    After obtaining the token key pair, the access token is always attached to subsequent request as follows
 
    ```
-   curl <BASE_URL>/api/users/<id>/profile -H "Content-Type=application/json, Authorization=Bearer <access_token>"
+   curl <BASE_URL>/api/users/<id>/profile -H "Content-Type:application/json" -H "Authorization:Bearer <access_token>"
    ```
+
+### `/api/token/refresh`
+- Methods: POST
+- Description: request for new access token to maintain log-in state
+- Sample Request:
+
+```
+curl -X POST <base-url>/api/token/refresh -H "Content-Type:application/json" -d '{"refresh": <refresh_token>}'
+```
+
+- Sample Response:
+
+```
+{
+	"access": <new-access-token>
+}
+```
+
 
 ### `/api/universites`
 - Methods: `GET`, `POST`
@@ -139,19 +160,6 @@ This is the backend of a full stack web application `EDUSOFT`. The API is a djan
 }
 ```
 
-### `/api/user/profile`
-- Methods: GET, POST
-
-- GET
-  - Description: Get the profile details of a given logged in user
-  - Sample Request:
-  ```
-  curl -X GET <baseurl>/api/user/profile \
-	-H "Content-Type: applicatio/json \
-   	-H "Authorization: Bearer <access-token>"
-  ```
-
-  - Sample Response:
 
 ### `/api/universities/<slug:id>`
 - Methods: `GET`, `PUT`, `DELETE`
@@ -165,8 +173,21 @@ curl -X GET <base_url>/universities/f8497301-0e9f-403f-9b84-6fa38c18d336
    - Response Body
 
 ```
-{'id': 'f8497301-0e9f-403f-9b84-6fa38c18d336', 'name': 'Lagos State University', 'history': 'Founded August 1990', 'languages': ['Yoruba', 'English'], 'created_by': 'adeyemi', 'country': 'Nigeria', 'city': 'Lagos', 'accomodation': 'On-campus accomodation available', 'website': 'https://www.unilag.edu.ng', 'postal_code': '210500', 'country_code': 'NG'}
+{
+	'id': 'f8497301-0e9f-403f-9b84-6fa38c18d336',
+	'name': 'Lagos State University',
+	'history': 'Founded August 1990',
+	'languages': ['Yoruba', 'English'],
+	'created_by': 'adeyemi',
+	'country': 'Nigeria',
+	'city': 'Lagos',
+	'accomodation': 'On-campus accomodation available',
+	'website': 'https://www.unilag.edu.ng',
+	'postal_code': '210500',
+	'country_code': 'NG'
+}
 ```
+
    - *PUT* Request:
    Update details of a University of `id`
 
@@ -192,9 +213,33 @@ curl -X GET <base_url>/universities/f8497301-0e9f-403f-9b84-6fa38c18d336
 		"gender" : "male",
 	}
 	```
-
   - PUT
     - Description: Update logged-in user profile
+
+
+
+### `/api/user`
+- Methods:
+    - GET (Authentication required)
+      - Description: Get the primary information of a given authenticated user
+	- Sample Request:
+	```
+	curl -X GET <base-url>/api/user \
+		-H "Content-Type: application/json" \
+		-H "Authorization: Bearer {access_token}"
+	```
+     	- Sample Response:
+	{
+		"id": 3f225-6b51-43bf-ad4f-e9c79800b92f',
+		'username': 'adeyemi',
+		'first_name': 'ade',
+		'last_name': 'idris',
+		'email': 'idris01@gmail.com',
+		'is_active': True
+	}
+
+	```
+
 
 ### `/api/courses/list`
   - Methods
@@ -214,37 +259,25 @@ curl -X GET <base_url>/universities/f8497301-0e9f-403f-9b84-6fa38c18d336
 				{
 					'id': 'df6544b1-10f9-4b68-8df7-8420158dd8fe',
 					'name': 'Animal Production and Health',
-					'department': 'Agricultural of Sciences',
 					'university_id': 'cc932788-0f3c-4547-b4a8-10070d1d2fb5',
-					'department_id': 'd1c1b6e3-fb65-4144-8a48-b848ae693604',
-					'about': 'Study of Farm animal production and health',
 					'university': 'osun state university'
 				},
 				{
 					'id': 'e8e8c34c-590c-433b-a814-67e51f93b47f',
 					'name': 'Crop Production',
-					'department': 'Agricultural of Sciences',
 					'university_id': 'cc932788-0f3c-4547-b4a8-10070d1d2fb5',
-					'department_id': 'd1c1b6e3-fb65-4144-8a48-b848ae693604',
-					'about': 'Study of Crop Production',
 					'university': 'osun state university'
 				},
 				{
 					'id': 'dfb16994-6000-45c9-8c8a-3f4baad56ea9',
 					'name': 'General Medicine',
-					'department': 'Medical studies',
 					'university_id': 'ebbb46f3-c309-4c9e-aeaa-7b731d6d9120',
-					'department_id': 'e08e8096-0045-4700-8439-ea9df7bbeb24',
-					'about': 'General Studies in Medicine',
 					'university': 'University of london'
 				},
 				{
 					'id': 'cb039da2-b5bd-4bd2-9575-b2891a63ab3d',
 					'name': 'Medical laboratory Science',
-					'department': 'Medical studies',
 					'university_id': 'ebbb46f3-c309-4c9e-aeaa-7b731d6d9120',
-					'department_id': 'e08e8096-0045-4700-8439-ea9df7bbeb24',
-					'about': 'Medical lab studies',
 					'university': 'University of london'
 				},
 			]
@@ -283,6 +316,28 @@ curl -X GET <base-url>/api/options -H "Content-Type: application/json"
 }
 ```
 
+### `/api/courses/<slug:id>/`
+-  Methods: GET
+-  Description: Get detail of a given course with id "id"
+-  Sample Request:
+```
+curl -X GET <base-url>/api/course/677062cf-8fc1-4ce7-939e-565109c132ad
+```
+
+-  Sample Response:
+
+```
+{
+	'id': '677062cf-8fc1-4ce7-939e-565109c132ad',
+	'name': 'Animal Production and Health',
+	'about': 'This deals with the study of Animal Production and Health',
+	'degrees': [],
+	'university': 'University Of Ilorin',
+	'university_id': 'e7e484d9-6b2c-4e80-af09-d085f90ddacc',
+	'department': 'Department Of Agriculture',
+	'department_id': '9339dc20-b311-4998-ad83-6fcddd0f3aaa'
+}
+```
 
 ## Data Model Diagram
 

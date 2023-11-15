@@ -7,8 +7,10 @@ from .views import (
     VerifyAccountAPIView,
     PasswordResetAPIView,
     UserProfileAPIView,
+    UserDetailAPIView,
     CourseListAPIView,
     OptionAPIView,
+    CourseDetailAPIView,
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -16,6 +18,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 app_name = "api"
 
 urlpatterns = [
+    path("user/", UserDetailAPIView.as_view(), name="user_data"),
     path(
         "universities/",
         UniversityListCreateAPIView.as_view(),
@@ -39,5 +42,6 @@ urlpatterns = [
     ),
     path("user/profile/", UserProfileAPIView.as_view(), name="profile_detail"),
     path("courses/list/", CourseListAPIView.as_view(), name="course_list"),
+    path("courses/<slug:id>/", CourseDetailAPIView.as_view(), name="course_detail"),
     path("options/", OptionAPIView.as_view(), name="available_course_country"),
 ]

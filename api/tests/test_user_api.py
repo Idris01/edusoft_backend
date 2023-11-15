@@ -4,6 +4,7 @@ from rest_framework import status
 from django.urls import reverse
 from backend.models import AppUser
 import json
+from datetime import datetime
 
 
 class AppUserTest(APITestCase):
@@ -171,12 +172,24 @@ class AppUserTest(APITestCase):
         self.assertEqual(email, content.get("email"))
         self.assertEqual(username, content.get("username"))
         self.assertIn("access", content)
+        self.assertIn("first_name", content)
+        self.assertIn("last_name", content)
         self.assertIn("refresh", content)
         self.assertIn("refresh_expires_seconds", content)
         self.assertIn("access_expires_seconds", content)
         self.assertGreater(
             content.get("refresh_expires_seconds"), content.get("access_expires_seconds")
         )
+
+        refresh_time = content.get("refresh_expires_seconds")
+        access_time = content.get("access_expires_seconds")
+
+        now = int(datetime.now().timestamp())
+
+        self.assertGreater(refresh_time, now)
+        self.assertGreater(access_time, now)
+        self.assertGreater(access_time - now, 299000)
+        self.assertGreater(refresh_time - now, 60 * 60 * 24 * 960)
 
         token_refresh_url = reverse("api:token_refresh")
         refresh_response = self.client.post(
@@ -332,3 +345,40 @@ class AppUserTest(APITestCase):
         self.client.login(email=self.test_email, password=self.test_password)
         response = self.client.get(self.registration_url)
         self.assertTrue(response.status_code, status.HTTP_200_OK)
+
+    def test_get_auth_user_data(self):
+        """Test that a an auth user can fetch basic credentials"""
+
+        response = self.client.post(
+            self.login_url, data=dict(email=self.test_email, password=self.test_password)
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        data = json.loads(response.content.decode("utf-8"))
+        access = data.get("access")
+
+        auth_user_url = reverse("api:user_data")
+
+        # send request as anonymous user
+        response = self.client.get(auth_user_url)
+
+        # anonymous user should'nt have access
+        self.assertIn(
+            response.status_code,
+            (
+                status.HTTP_400_BAD_REQUEST,
+                status.HTTP_401_UNAUTHORIZED,
+                status.HTTP_403_FORBIDDEN,
+            ),
+        )
+
+        self.client.credentials(HTTP_AUTHORIZATION="Bearer {}".format(access))
+
+        response = self.client.get(auth_user_url)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        auth_data = json.loads(response.content.decode("utf-8"))
+        self.assertIn("email", auth_data)
+        self.assertIn("username", auth_data)
