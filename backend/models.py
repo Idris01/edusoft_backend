@@ -8,11 +8,12 @@ import uuid
 
 models.CharField.register_lookup(Length)
 
-# consultation status
+# define consultation status constants
 FULFILLED = "Fullfilled"
 INITIATED = "Initiated"
 PROCESSING = "Processing"
 
+# define consultation status choice fields
 CONS_CHOICES = (
     ("Initiated", INITIATED),
     ("Processing", PROCESSING),
@@ -20,20 +21,23 @@ CONS_CHOICES = (
 )
 
 
-# token type
+# token type constants
 RESET = "reset"
 ACTIVATE = "activate"
 
+# define token type fields
 TOKEN_CHOICES = (
     ("reset", RESET),
     ("activate", ACTIVATE),
 )
-# payment status
+
+# define payment status constants
 PENDING = "pending"
 SUCCESS = "success"
 FAILED = "failed"
 PROCESSING = "processing"
 
+# define payment status choice fields
 PAYMENT_STATUS = (
     ("Success", SUCCESS),
     ("Pending", PENDING),
@@ -41,18 +45,27 @@ PAYMENT_STATUS = (
     ("Processing", PROCESSING),
 )
 
-# gender options
+# gender options constants
 MALE = "male"
 FEMALE = "female"
 
+# define gender options choice fields
 GENDERS = (
     ("male", MALE),
     ("female", FEMALE),
 )
 
 
-# Create your models here.
 class BaseModel(models.Model):
+    """An abstract class the define related fieldsfor various models
+
+    id (uuid): unique identification for the model
+    name (string): name of the respective item
+    created_at (datetime): date and time of object creation
+    updated_at (datetime): last uodated date and time
+    """
+
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(
         max_length=100, null=False, help_text="name or title", blank=False, unique=True
@@ -72,6 +85,8 @@ class BaseModel(models.Model):
 
 
 class BaseModelNameNoUnique(models.Model):
+    """ Also a base model but without name field set as uniqie"""
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(
         max_length=100, null=False, help_text="name or title", blank=False
