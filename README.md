@@ -1,6 +1,12 @@
 # Edusoft Backend
-This is the backend of a full stack web application `EDUSOFT`. The API is a django-restframework application that serves universities public information such as Country and State location, courses offered, tuition fee etc.
 
+## Introduction
+Welcome to the github repository of Edusoft website backend( written with django-restframework)
+
+Edusoft is an education website that allows people who desires to study in any university around the world search and connect to their desired university and course with an adequate informations with respect to course, tuition accommodation and application processess and procedures.
+
+## Project Link
+https://edusoft-test.vercel.app/
 
 ## API documentation
 
@@ -290,9 +296,11 @@ curl -X GET <base_url>/universities/f8497301-0e9f-403f-9b84-6fa38c18d336
 -  Description: This exposes choice of options currently available for the Edusoft API, which can be use in form as filters in the `Frontend`
 
 -  Sample Request:
+
 ```
 curl -X GET <base-url>/api/options -H "Content-Type: application/json"
 ```
+
 
 - Sample Response
 
@@ -413,3 +421,20 @@ cp db.sqlite3 test_db.sqlite3
 ```
 ENVIRONMENT=Test ./manage.py test api/tests --keepdb
 ```
+
+## Contributing:
+[Idris Adebowale](https://github.com/idris01)
+[Gloria Nwaigba](https://github.com/Nwaigba66)
+
+
+## Licensing
+
+MIT License
+
+Copyright (c) 2023 Idris01
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
