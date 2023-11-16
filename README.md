@@ -1,6 +1,4 @@
-# Edusoft Backend
-
-## Introduction
+# Introduction
 Welcome to the github repository of Edusoft website backend( written with django-restframework)
 
 Edusoft is an education website that allows people who desires to study in any university around the world search and connect to their desired university and course with an adequate informations with respect to course, tuition accommodation and application processess and procedures.
